@@ -174,7 +174,10 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => window.open(`/api/invoices/${invoiceId}/pdf`, "_blank")}
+          >
             <Download className="mr-2 h-4 w-4" />
             تحميل PDF
           </Button>

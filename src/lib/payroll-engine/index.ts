@@ -76,19 +76,37 @@ export async function calculateEmployeePayroll(
   const holidayDays = attendanceDays.filter((d: { status: string }) => d.status === "HOLIDAY").length;
 
   // 4. Pro-rate base salary based on actual days worked
-  // Calculate actual work days in the month(s) covered
-  const startMonth = startDate.getMonth();
-  const startYear = startDate.getFullYear();
-  const endMonth = endDate.getMonth();
-  const endYear = endDate.getFullYear();
+  // Get the employee's effective work schedule for the period
+  const scheduleAssignment = await db.scheduleAssignment.findFirst({
+    where: {
+      employeeId,
+      effectiveFrom: { lte: endDate },
+      OR: [
+        { effectiveTo: null },
+        { effectiveTo: { gte: startDate } },
+      ],
+    },
+    include: { schedule: true },
+    orderBy: { effectiveFrom: "desc" },
+  });
+
+  const schedule = scheduleAssignment?.schedule;
+  // JS getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
+  const dayFlags: Record<number, boolean> = {
+    0: schedule?.sunday ?? true,
+    1: schedule?.monday ?? true,
+    2: schedule?.tuesday ?? true,
+    3: schedule?.wednesday ?? true,
+    4: schedule?.thursday ?? true,
+    5: schedule?.friday ?? false,
+    6: schedule?.saturday ?? false,
+  };
 
   let actualWorkDaysInPeriod = 0;
   const tempDate = new Date(startDate);
   while (tempDate <= endDate) {
     const dayOfWeek = tempDate.getDay();
-    // 0 = Sunday, 6 = Saturday in JS (but we use Sunday=0 as work day by default)
-    // We count all days except Friday (5) as potential work days
-    if (dayOfWeek !== 5) {
+    if (dayFlags[dayOfWeek]) {
       actualWorkDaysInPeriod++;
     }
     tempDate.setDate(tempDate.getDate() + 1);

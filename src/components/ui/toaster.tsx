@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
 export function Toaster() {
-  const { toasts, removeToast } = useToast();
+  const { toasts, dismiss } = useToast();
 
   return (
     <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
@@ -30,7 +30,7 @@ export function Toaster() {
             )}
           </div>
           <button
-            onClick={() => removeToast(toast.id)}
+            onClick={() => dismiss(toast.id)}
             className="absolute right-1 top-1 rounded-md p-1 opacity-0 transition-opacity hover:opacity-100 group-hover:opacity-100"
           >
             <X className="h-4 w-4" />

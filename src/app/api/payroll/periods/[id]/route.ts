@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const statusTransitions: Record<string, string[]> = {
   DRAFT: ["CALCULATED"],
@@ -57,10 +58,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireRole(["ADMIN", "FINANCE"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
 
     const { id } = await params;
     const body = await request.json();

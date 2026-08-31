@@ -238,16 +238,17 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([role])
+  @@index([employeeId])
 }
 
 model Employee {
-  id               String           @id @default(uuid())
-  companyId        String
-  company          Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  branchId         String?
-  branch           Branch?          @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  departmentId     String?
-  department       Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  id           String      @id @default(uuid())
+  companyId    String
+  company      Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  branchId     String?
+  branch       Branch?     @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   employeeCode     String?
   firstName        String
@@ -291,13 +292,13 @@ model Employee {
 }
 
 model SalaryProfile {
-  id           String   @id @default(uuid())
-  employeeId   String
-  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  baseSalary   Decimal  @db.Decimal(12, 2)
-  currency     String   @default("SAR")
-  overtimeRate Decimal  @default(0) @db.Decimal(8, 2)
-  hourlyRate   Decimal  @default(0) @db.Decimal(8, 2)
+  id            String    @id @default(uuid())
+  employeeId    String
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  baseSalary    Decimal   @db.Decimal(12, 2)
+  currency      String    @default("SAR")
+  overtimeRate  Decimal   @default(0) @db.Decimal(8, 2)
+  hourlyRate    Decimal   @default(0) @db.Decimal(8, 2)
   effectiveFrom DateTime
   effectiveTo   DateTime?
   notes         String?
@@ -311,17 +312,17 @@ model SalaryProfile {
 }
 
 model SalaryComponent {
-  id              String             @id @default(uuid())
+  id              String              @id @default(uuid())
   salaryProfileId String
-  salaryProfile   SalaryProfile      @relation(fields: [salaryProfileId], references: [id], onDelete: Cascade)
+  salaryProfile   SalaryProfile       @relation(fields: [salaryProfileId], references: [id], onDelete: Cascade)
   type            SalaryComponentType
   name            String
   nameAr          String?
-  amount          Decimal            @db.Decimal(12, 2)
-  isPercentage    Boolean            @default(false)
+  amount          Decimal             @db.Decimal(12, 2)
+  isPercentage    Boolean             @default(false)
   percentageOf    String?
-  isRecurring     Boolean            @default(true)
-  isActive        Boolean            @default(true)
+  isRecurring     Boolean             @default(true)
+  isActive        Boolean             @default(true)
   notes           String?
 
   createdAt DateTime @default(now())
@@ -410,16 +411,16 @@ model Holiday {
 }
 
 model LeaveType {
-  id              String   @id @default(uuid())
-  companyId       String
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  name            String
-  nameAr          String?
-  defaultDays     Int      @default(0)
-  isPaid          Boolean  @default(true)
-  affectsPayroll  Boolean  @default(true)
+  id               String  @id @default(uuid())
+  companyId        String
+  company          Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name             String
+  nameAr           String?
+  defaultDays      Int     @default(0)
+  isPaid           Boolean @default(true)
+  affectsPayroll   Boolean @default(true)
   requiresApproval Boolean @default(true)
-  isActive        Boolean  @default(true)
+  isActive         Boolean @default(true)
 
   leaveRequests LeaveRequest[]
 
@@ -471,23 +472,23 @@ model AttendanceImport {
 
   rawRecords AttendanceRawRecord[]
 
-  createdAt    DateTime  @default(now())
-  completedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
 
   @@index([companyId])
   @@index([status])
 }
 
 model AttendanceRawRecord {
-  id                 String         @id @default(uuid())
+  id                 String           @id @default(uuid())
   attendanceImportId String
   import             AttendanceImport @relation(fields: [attendanceImportId], references: [id], onDelete: Cascade)
   employeeIdentifier String
   punchTime          DateTime
   rawDeviceId        String?
   rawRow             Json
-  isDuplicate        Boolean        @default(false)
-  matchStatus        RawMatchStatus @default(UNMATCHED)
+  isDuplicate        Boolean          @default(false)
+  matchStatus        RawMatchStatus   @default(UNMATCHED)
   matchedEmployeeId  String?
 
   attendancePunches AttendancePunch[]
@@ -500,17 +501,17 @@ model AttendanceRawRecord {
 }
 
 model AttendancePunch {
-  id             String              @id @default(uuid())
-  rawRecordId    String?
-  rawRecord      AttendanceRawRecord? @relation(fields: [rawRecordId], references: [id], onDelete: SetNull)
-  employeeId     String
-  employee       Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  date           DateTime            @db.Date
-  punchTime      DateTime
-  punchType      PunchType
-  confidence     Float               @default(1.0)
-  isManual       Boolean             @default(false)
-  createdById    String?
+  id          String               @id @default(uuid())
+  rawRecordId String?
+  rawRecord   AttendanceRawRecord? @relation(fields: [rawRecordId], references: [id], onDelete: SetNull)
+  employeeId  String
+  employee    Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        DateTime             @db.Date
+  punchTime   DateTime
+  punchType   PunchType
+  confidence  Float                @default(1.0)
+  isManual    Boolean              @default(false)
+  createdById String?
 
   createdAt DateTime @default(now())
 
@@ -548,19 +549,19 @@ model AttendanceDay {
 }
 
 model AttendanceException {
-  id              String         @id @default(uuid())
-  employeeId      String
-  employee        Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  date            DateTime       @db.Date
-  type            ExceptionType
-  reason          String
-  notes           String?
-  submittedById   String
-  approvedById    String?
-  approvedAt      DateTime?
-  status          ApprovalStatus @default(PENDING)
-  affectsAttendance Boolean      @default(true)
-  affectsPayroll    Boolean      @default(true)
+  id                String         @id @default(uuid())
+  employeeId        String
+  employee          Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date              DateTime       @db.Date
+  type              ExceptionType
+  reason            String
+  notes             String?
+  submittedById     String
+  approvedById      String?
+  approvedAt        DateTime?
+  status            ApprovalStatus @default(PENDING)
+  affectsAttendance Boolean        @default(true)
+  affectsPayroll    Boolean        @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -601,22 +602,22 @@ model PayrollPeriod {
 }
 
 model PayrollRecord {
-  id                  String              @id @default(uuid())
-  payrollPeriodId     String
-  payrollPeriod       PayrollPeriod       @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
-  employeeId          String
-  employee            Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  baseSalary          Decimal             @default(0) @db.Decimal(12, 2)
-  totalAdditions      Decimal             @default(0) @db.Decimal(12, 2)
-  totalDeductions     Decimal             @default(0) @db.Decimal(12, 2)
-  attendanceDeductions Decimal            @default(0) @db.Decimal(12, 2)
-  overtime            Decimal             @default(0) @db.Decimal(12, 2)
-  gross               Decimal             @default(0) @db.Decimal(12, 2)
-  net                 Decimal             @default(0) @db.Decimal(12, 2)
-  status              PayrollRecordStatus @default(DRAFT)
-  components          Json?
-  attendanceSummary   Json?
-  notes               String?
+  id                   String              @id @default(uuid())
+  payrollPeriodId      String
+  payrollPeriod        PayrollPeriod       @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
+  employeeId           String
+  employee             Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  baseSalary           Decimal             @default(0) @db.Decimal(12, 2)
+  totalAdditions       Decimal             @default(0) @db.Decimal(12, 2)
+  totalDeductions      Decimal             @default(0) @db.Decimal(12, 2)
+  attendanceDeductions Decimal             @default(0) @db.Decimal(12, 2)
+  overtime             Decimal             @default(0) @db.Decimal(12, 2)
+  gross                Decimal             @default(0) @db.Decimal(12, 2)
+  net                  Decimal             @default(0) @db.Decimal(12, 2)
+  status               PayrollRecordStatus @default(DRAFT)
+  components           Json?
+  attendanceSummary    Json?
+  notes                String?
 
   componentsList PayrollComponent[]
   payslips       Payslip[]
@@ -630,13 +631,13 @@ model PayrollRecord {
 }
 
 model PayrollComponent {
-  id              String              @id @default(uuid())
+  id              String               @id @default(uuid())
   payrollRecordId String
-  payrollRecord   PayrollRecord       @relation(fields: [payrollRecordId], references: [id], onDelete: Cascade)
+  payrollRecord   PayrollRecord        @relation(fields: [payrollRecordId], references: [id], onDelete: Cascade)
   type            PayrollComponentType
   name            String
   nameAr          String?
-  amount          Decimal             @db.Decimal(12, 2)
+  amount          Decimal              @db.Decimal(12, 2)
   description     String?
 
   createdAt DateTime @default(now())
@@ -692,16 +693,16 @@ model Client {
 }
 
 model Service {
-  id           String   @id @default(uuid())
+  id           String  @id @default(uuid())
   companyId    String
-  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company      Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name         String
   nameAr       String?
   description  String?
-  defaultPrice Decimal  @db.Decimal(12, 2)
-  unit         String   @default("unit")
-  taxEnabled   Boolean  @default(false)
-  isActive     Boolean  @default(true)
+  defaultPrice Decimal @db.Decimal(12, 2)
+  unit         String  @default("unit")
+  taxEnabled   Boolean @default(false)
+  isActive     Boolean @default(true)
   notes        String?
 
   invoiceItems InvoiceItem[]
@@ -733,9 +734,9 @@ model Invoice {
   paymentTerms  Int           @default(30)
   createdById   String
 
-  items            InvoiceItem[]
-  paymentSchedule  PaymentSchedule?
-  payments         Payment[]
+  items           InvoiceItem[]
+  paymentSchedule PaymentSchedule?
+  payments        Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -777,14 +778,14 @@ model PaymentSchedule {
 }
 
 model PaymentInstallment {
-  id                String           @id @default(uuid())
+  id                String            @id @default(uuid())
   paymentScheduleId String
-  paymentSchedule   PaymentSchedule  @relation(fields: [paymentScheduleId], references: [id], onDelete: Cascade)
+  paymentSchedule   PaymentSchedule   @relation(fields: [paymentScheduleId], references: [id], onDelete: Cascade)
   installmentNumber Int
-  amount            Decimal          @db.Decimal(12, 2)
+  amount            Decimal           @db.Decimal(12, 2)
   dueDate           DateTime
   status            InstallmentStatus @default(PENDING)
-  paidAmount        Decimal          @default(0) @db.Decimal(12, 2)
+  paidAmount        Decimal           @default(0) @db.Decimal(12, 2)
   paidDate          DateTime?
 
   createdAt DateTime @default(now())
@@ -815,9 +816,9 @@ model Payment {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   action    String
   entity    String
   entityId  String?
