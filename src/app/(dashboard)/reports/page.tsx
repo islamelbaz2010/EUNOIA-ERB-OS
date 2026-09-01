@@ -92,6 +92,28 @@ const reportCards: ReportCard[] = [
   },
 ];
 
+const summaryLabels: Record<string, string> = {
+  totalEmployees: "إجمالي الموظفين",
+  totalPresent: "الحضور",
+  totalAbsent: "الغياب",
+  totalLate: "المتأخرون",
+  totalOvertime: "العمل الإضافي",
+  averageAttendance: "متوسط الحضور",
+  totalInvoices: "إجمالي الفواتير",
+  totalSubtotal: "المجموع الفرعي",
+  totalDiscount: "الخصم",
+  totalVat: "الضريبة",
+  totalAmount: "الإجمالي",
+  totalPaid: "المدفوع",
+  totalBaseSalary: "إجمالي الرواتب الأساسية",
+  totalGross: "إجمالي الرواتب brutto",
+  totalNet: "صافي الرواتب",
+  totalDeductions: "إجمالي الخصومات",
+  totalLateMinutes: "إجمالي تأخر (دقيقة)",
+  totalOvertimeMinutes: "إجمالي العمل الإضافي (دقيقة)",
+  byStatus: "حسب الحالة",
+};
+
 export default function ReportsPage() {
   const router = useRouter();
   const [selectedReport, setSelectedReport] = React.useState<string | null>(null);
@@ -205,10 +227,10 @@ export default function ReportsPage() {
                   {Object.entries(reportData.summary).map(([key, value]) => (
                     <Card key={key}>
                       <CardContent className="p-6">
-                        <p className="text-sm text-muted-foreground">{key}</p>
+                        <p className="text-sm text-muted-foreground">{summaryLabels[key] || key}</p>
                         <p className="text-2xl font-bold">
                           {typeof value === "number"
-                            ? key.includes("amount") || key.includes("total")
+                            ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime")
                               ? formatCurrency(value)
                               : formatNumber(value)
                             : String(value)}
@@ -226,17 +248,19 @@ export default function ReportsPage() {
                       <TableHeader>
                         <TableRow>
                           {Object.keys(reportData.items[0]).map((key) => (
-                            <TableHead key={key}>{key}</TableHead>
+                            <TableHead key={key}>{summaryLabels[key] || key}</TableHead>
                           ))}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {reportData.items.map((item: any, index: number) => (
                           <TableRow key={index}>
-                            {Object.values(item).map((value, i) => (
+                            {Object.entries(item).map(([key, value], i) => (
                               <TableCell key={i}>
                                 {typeof value === "number"
-                                  ? formatCurrency(value)
+                                  ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime") || key.toLowerCase().includes("price")
+                                    ? formatCurrency(value)
+                                    : formatNumber(value)
                                   : String(value ?? "-")}
                               </TableCell>
                             ))}

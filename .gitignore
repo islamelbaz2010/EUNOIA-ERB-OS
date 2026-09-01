@@ -43,9 +43,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
-prisma/migrations/
-
 # uploads and generated files
 uploads/
 *.pdf
@@ -55,3 +52,4 @@ dist/
 
 # real source data (NEVER commit)
 _REAL_DATA/
+.env*

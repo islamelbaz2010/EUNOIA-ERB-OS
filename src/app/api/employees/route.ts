@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           baseSalary: validatedData.salary.baseSalary,
           overtimeRate: validatedData.salary.overtimeRate || 0,
           hourlyRate: validatedData.salary.hourlyRate || 0,
-          currency: validatedData.salary.currency || "SAR",
+          currency: validatedData.salary.currency || "EGP",
           effectiveFrom: new Date(validatedData.joinDate),
           components: validatedData.salary.components
             ? {

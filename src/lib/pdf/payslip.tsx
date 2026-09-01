@@ -14,6 +14,7 @@ interface PayslipData {
     nameAr?: string;
     address?: string;
     phone?: string;
+    currency?: string;
   };
   employee: {
     firstName: string;
@@ -224,8 +225,8 @@ const formatDateShort = (dateStr: string) => {
   });
 };
 
-const formatMoney = (amount: number) => {
-  return `SAR ${amount.toLocaleString("en", {
+const formatMoney = (amount: number, currency: string = "EGP") => {
+  return `${currency} ${amount.toLocaleString("en", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -325,14 +326,14 @@ export function PayslipDocument({ data }: { data: PayslipData }) {
           <View style={styles.tableRow}>
             <Text style={styles.colDesc}>Basic Salary</Text>
             <Text style={[styles.colAmount, styles.amountPositive]}>
-              {formatMoney(data.payroll.baseSalary)}
+              {formatMoney(data.payroll.baseSalary, data.company.currency || "EGP")}
             </Text>
           </View>
           {data.payroll.overtime > 0 && (
             <View style={styles.tableRowAlt}>
               <Text style={styles.colDesc}>Overtime</Text>
               <Text style={[styles.colAmount, styles.amountPositive]}>
-                {formatMoney(data.payroll.overtime)}
+                {formatMoney(data.payroll.overtime, data.company.currency || "EGP")}
               </Text>
             </View>
           )}
@@ -340,7 +341,7 @@ export function PayslipDocument({ data }: { data: PayslipData }) {
             <View key={idx} style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
               <Text style={styles.colDesc}>{item.name}</Text>
               <Text style={[styles.colAmount, styles.amountPositive]}>
-                {formatMoney(Number(item.amount))}
+                {formatMoney(Number(item.amount), data.company.currency || "EGP")}
               </Text>
             </View>
           ))}
@@ -357,7 +358,7 @@ export function PayslipDocument({ data }: { data: PayslipData }) {
             <View style={styles.tableRow}>
               <Text style={styles.colDesc}>Attendance Deductions</Text>
               <Text style={[styles.colAmount, styles.amountNegative]}>
-                {formatMoney(data.payroll.attendanceDeductions)}
+                {formatMoney(data.payroll.attendanceDeductions, data.company.currency || "EGP")}
               </Text>
             </View>
           )}
@@ -373,7 +374,7 @@ export function PayslipDocument({ data }: { data: PayslipData }) {
             <View key={idx} style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
               <Text style={styles.colDesc}>{item.name}</Text>
               <Text style={[styles.colAmount, styles.amountNegative]}>
-                {formatMoney(Number(item.amount))}
+                {formatMoney(Number(item.amount), data.company.currency || "EGP")}
               </Text>
             </View>
           ))}
@@ -384,18 +385,18 @@ export function PayslipDocument({ data }: { data: PayslipData }) {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Gross Salary</Text>
             <Text style={styles.summaryValue}>
-              {formatMoney(data.payroll.gross)}
+              {formatMoney(data.payroll.gross, data.company.currency || "EGP")}
             </Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Total Deductions</Text>
             <Text style={[styles.summaryValue, { color: "#c53030" }]}>
-              -{formatMoney(data.payroll.totalDeductions)}
+              -{formatMoney(data.payroll.totalDeductions, data.company.currency || "EGP")}
             </Text>
           </View>
           <View style={styles.totalRow}>
             <Text>Net Salary</Text>
-            <Text>{formatMoney(data.payroll.net)}</Text>
+            <Text>{formatMoney(data.payroll.net, data.company.currency || "EGP")}</Text>
           </View>
         </View>
 

@@ -169,8 +169,8 @@ model Company {
   vatNumber String?
   vatRate   Decimal? @default(15) @db.Decimal(5, 2)
   logo      String?
-  currency  String   @default("SAR")
-  timezone  String   @default("Asia/Riyadh")
+  currency  String   @default("EGP")
+  timezone  String   @default("Africa/Cairo")
 
   branches          Branch[]
   departments       Department[]
@@ -296,7 +296,7 @@ model SalaryProfile {
   employeeId    String
   employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   baseSalary    Decimal   @db.Decimal(12, 2)
-  currency      String    @default("SAR")
+  currency      String    @default("EGP")
   overtimeRate  Decimal   @default(0) @db.Decimal(8, 2)
   hourlyRate    Decimal   @default(0) @db.Decimal(8, 2)
   effectiveFrom DateTime
@@ -728,7 +728,7 @@ model Invoice {
   vatRate       Decimal       @default(0) @db.Decimal(5, 2)
   vatAmount     Decimal       @default(0) @db.Decimal(12, 2)
   total         Decimal       @db.Decimal(12, 2)
-  currency      String        @default("SAR")
+  currency      String        @default("EGP")
   status        InvoiceStatus @default(DRAFT)
   notes         String?
   paymentTerms  Int           @default(30)

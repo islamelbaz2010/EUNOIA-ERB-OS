@@ -175,7 +175,7 @@ export async function PUT(
           baseSalary: salary.baseSalary,
           overtimeRate: salary.overtimeRate || 0,
           hourlyRate: salary.hourlyRate || 0,
-          currency: salary.currency || "SAR",
+          currency: salary.currency || "EGP",
           effectiveFrom: new Date(),
         },
       });

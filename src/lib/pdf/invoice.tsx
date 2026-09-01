@@ -300,7 +300,7 @@ const formatDateShort = (dateStr: string) => {
   });
 };
 
-const formatMoney = (amount: number, currency: string = "SAR") => {
+const formatMoney = (amount: number, currency: string = "EGP") => {
   return `${currency} ${amount.toLocaleString("en", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

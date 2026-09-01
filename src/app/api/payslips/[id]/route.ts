@@ -70,6 +70,7 @@ export async function GET(
         nameAr: company?.nameAr || undefined,
         address: company?.address || undefined,
         phone: company?.phone || undefined,
+        currency: company?.currency || "EGP",
       },
       employee: {
         firstName: payslip.employee.firstName,

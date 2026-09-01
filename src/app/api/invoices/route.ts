@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/authorization";
 
 const createInvoiceSchema = z.object({
   clientId: z.string().uuid(),
-  dueDate: z.string().datetime(),
+  dueDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
   discount: z.number().min(0).optional(),
   vatEnabled: z.boolean().optional(),
   notes: z.string().optional(),

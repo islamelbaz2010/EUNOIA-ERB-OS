@@ -15,18 +15,18 @@ export async function POST(request: NextRequest) {
 
     const company = await db.company.create({
       data: {
-        name: "EUNOIA HR Solutions",
-        nameAr: "حلولوارتفنياء للموارد البشرية",
+        name: "EUNOIA",
+        nameAr: "يونيويا",
         email: "info@eunoia.com",
-        phone: "+966500000000",
-        address: "123 Business Street",
-        city: "Riyadh",
-        country: "Saudi Arabia",
+        phone: "+201000000000",
+        address: "Cairo, Egypt",
+        city: "Cairo",
+        country: "Egypt",
         taxNumber: "1234567890",
         vatNumber: "123456789012345",
-        vatRate: 15,
-        currency: "SAR",
-        timezone: "Asia/Riyadh",
+        vatRate: 14,
+        currency: "EGP",
+        timezone: "Africa/Cairo",
       },
     });
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           baseSalary,
           overtimeRate: 50,
           hourlyRate: Math.round(baseSalary / 30 / 8 * 100) / 100,
-          currency: "SAR",
+          currency: "EGP",
           effectiveFrom: new Date("2024-01-15"),
           components: {
             create: [
