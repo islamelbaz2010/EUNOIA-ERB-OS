@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 20,
     borderBottomWidth: 2,
-    borderBottomColor: "#1a365d",
+    borderBottomColor: "#C41E4A",
     paddingBottom: 15,
   },
   companyInfo: {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   companyName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#1a365d",
+    color: "#C41E4A",
     marginBottom: 4,
   },
   companyDetail: {
@@ -85,13 +85,13 @@ const styles = StyleSheet.create({
   payslipTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#1a365d",
+    color: "#C41E4A",
     textAlign: "right",
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#1a365d",
+    color: "#C41E4A",
     marginBottom: 8,
     paddingBottom: 4,
     borderBottomWidth: 1,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#1a365d",
+    backgroundColor: "#C41E4A",
     color: "#ffffff",
     paddingVertical: 6,
     paddingHorizontal: 8,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 6,
     paddingHorizontal: 8,
-    backgroundColor: "#1a365d",
+    backgroundColor: "#C41E4A",
     color: "#ffffff",
     fontWeight: "bold",
   },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   attendanceValue: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#1a365d",
+    color: "#C41E4A",
   },
   attendanceLabel: {
     fontSize: 8,

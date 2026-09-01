@@ -5,7 +5,7 @@
   --color-foreground: #0a0a0a;
   --color-card: #ffffff;
   --color-card-foreground: #0a0a0a;
-  --color-primary: #1e40af;
+  --color-primary: #C41E4A;
   --color-primary-foreground: #ffffff;
   --color-secondary: #f1f5f9;
   --color-secondary-foreground: #0a0a0a;
@@ -17,7 +17,8 @@
   --color-destructive-foreground: #ffffff;
   --color-border: #e2e8f0;
   --color-input: #e2e8f0;
-  --color-ring: #1e40af;
+  --color-ring: #C41E4A;
+  --color-teal: #1A6B5C;
   --color-success: #16a34a;
   --color-success-foreground: #ffffff;
   --color-warning: #f59e0b;

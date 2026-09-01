@@ -93,7 +93,9 @@ prisma/
 
 ## Documentation
 
-- [Training & User Guide](docs/EUNOIA_ERB_OS_TRAINING_GUIDE.md) — operational manual for all roles
+- [Training & User Guide (PDF)](docs/EUNOIA_ERB_OS_TRAINING_GUIDE.pdf) — printable training manual
+- [Training & User Guide (Markdown)](docs/EUNOIA_ERB_OS_TRAINING_GUIDE.md) — online documentation
+- [CI Verification](docs/EUNOIA_CI_VERIFICATION.md) — corporate identity compliance report
 - [Architecture](ARCHITECTURE.md) — system design and data flows
 - [Database](DATABASE.md) — schema and models
 - [Business Rules](BUSINESS_RULES.md) — configurable business logic
