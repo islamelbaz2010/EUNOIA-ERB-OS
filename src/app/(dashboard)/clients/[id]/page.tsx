@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowRight,
+  ArrowLeft,
   Loader2,
   Save,
   Receipt,
@@ -124,14 +124,14 @@ export default function ClientDetailPage() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        toast({ title: "تم الحفظ بنجاح" });
+        toast({ title: "Saved successfully" });
         fetchClient();
       } else {
         const error = await res.json().catch(() => ({}));
-        toast({ title: "خطأ", description: error.error || "فشل في حفظ البيانات", variant: "destructive" });
+        toast({ title: "Error", description: error.error || "Failed to save data", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حفظ البيانات", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save data", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -149,7 +149,7 @@ export default function ClientDetailPage() {
   if (!client) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">لم يتم العثور على العميل</p>
+        <p className="text-muted-foreground">Client not found</p>
       </div>
     );
   }
@@ -169,11 +169,11 @@ export default function ClientDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push("/clients")}>
-          <ArrowRight className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">{client.name}</h1>
-          <p className="text-muted-foreground">{client.nameAr || client.email || ""}</p>
+          <p className="text-muted-foreground">{client.email || client.nameAr || ""}</p>
         </div>
       </div>
 
@@ -181,48 +181,48 @@ export default function ClientDetailPage() {
         <TabsList>
           <TabsTrigger value="info">
             <User className="mr-2 h-4 w-4" />
-            المعلومات
+            Info
           </TabsTrigger>
           <TabsTrigger value="invoices">
             <Receipt className="mr-2 h-4 w-4" />
-            الفواتير ({client.invoices.length})
+            Invoices ({client.invoices.length})
           </TabsTrigger>
           <TabsTrigger value="payments">
             <CreditCard className="mr-2 h-4 w-4" />
-            المدفوعات
+            Payments
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>بيانات العميل</CardTitle>
+              <CardTitle>Client Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>الاسم (إنجليزي)</Label>
+                  <Label>Name (English)</Label>
                   <Input
                     value={form.name || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الاسم (عربي)</Label>
+                  <Label>Name (Arabic)</Label>
                   <Input
                     value={form.nameAr || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, nameAr: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>جهة الاتصال</Label>
+                  <Label>Contact Person</Label>
                   <Input
                     value={form.contactPerson || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الهاتف</Label>
+                  <Label>Phone</Label>
                   <Input
                     value={form.phone || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -230,7 +230,7 @@ export default function ClientDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>البريد الإلكتروني</Label>
+                  <Label>Email</Label>
                   <Input
                     value={form.email || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
@@ -238,27 +238,27 @@ export default function ClientDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المدينة</Label>
+                  <Label>City</Label>
                   <Input
                     value={form.city || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>البلد</Label>
+                  <Label>Country</Label>
                   <Input
                     value={form.country || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المحافظة</Label>
+                  <Label>Governorate</Label>
                   <Select
                     value={form.governorate || ""}
                     onValueChange={(value) => setForm((prev) => ({ ...prev, governorate: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر المحافظة" />
+                      <SelectValue placeholder="Select governorate" />
                     </SelectTrigger>
                     <SelectContent>
                       {EGYPT_GOVERNORATES.map((g) => (
@@ -268,7 +268,7 @@ export default function ClientDetailPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>الرقم الضريبي</Label>
+                  <Label>Tax Number</Label>
                   <Input
                     value={form.taxNumber || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, taxNumber: e.target.value }))}
@@ -276,7 +276,7 @@ export default function ClientDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>شروط الدفع (أيام)</Label>
+                  <Label>Payment Terms (days)</Label>
                   <Input
                     type="number"
                     value={form.paymentTerms || 30}
@@ -286,7 +286,7 @@ export default function ClientDetailPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>العنوان</Label>
+                <Label>Address</Label>
                 <Input
                   value={form.address || ""}
                   onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -295,7 +295,7 @@ export default function ClientDetailPage() {
               <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  حفظ
+                  Save
                 </Button>
               </div>
             </CardContent>
@@ -305,24 +305,24 @@ export default function ClientDetailPage() {
         <TabsContent value="invoices" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>الفواتير</CardTitle>
+              <CardTitle>Invoices</CardTitle>
               <Button asChild size="sm">
-                <a href={`/invoices/new?clientId=${client.id}`}>إضافة فاتورة</a>
+                <a href={`/invoices/new?clientId=${client.id}`}>Add Invoice</a>
               </Button>
             </CardHeader>
             <CardContent>
               {client.invoices.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">لا توجد فواتير</p>
+                <p className="text-center text-muted-foreground py-8">No invoices found</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>رقم الفاتورة</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>الاستحقاق</TableHead>
-                      <TableHead>المبلغ</TableHead>
-                      <TableHead>المدفوع</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead>Invoice #</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Paid</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -353,19 +353,19 @@ export default function ClientDetailPage() {
         <TabsContent value="payments" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>سجل المدفوعات</CardTitle>
+              <CardTitle>Payment History</CardTitle>
             </CardHeader>
             <CardContent>
               {client.invoices.flatMap((inv) => inv.payments).length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">لا توجد مدفوعات</p>
+                <p className="text-center text-muted-foreground py-8">No payments found</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الفاتورة</TableHead>
-                      <TableHead>المبلغ</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>الطريقة</TableHead>
+                      <TableHead>Invoice</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Method</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

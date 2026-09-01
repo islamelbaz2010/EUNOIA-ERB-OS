@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { formatZodError } from "@/lib/validation";
 import { requireRole } from "@/lib/authorization";
 
 const createPaymentSchema = z.object({
@@ -173,7 +174,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(payment, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 });
+      return NextResponse.json({ error: formatZodError(error), details: error.issues }, { status: 400 });
     }
     console.error("POST /api/payments error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

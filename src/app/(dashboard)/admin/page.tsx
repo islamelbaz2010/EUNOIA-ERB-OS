@@ -215,10 +215,10 @@ export default function AdminPage() {
         body: JSON.stringify(company),
       });
       if (res.ok) {
-        toast({ title: "تم الحفظ بنجاح" });
+        toast({ title: "Saved successfully" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -233,12 +233,12 @@ export default function AdminPage() {
         body: JSON.stringify(scheduleForm),
       });
       if (res.ok) {
-        toast({ title: "تمت الإضافة بنجاح" });
+        toast({ title: "Added successfully" });
         setShowScheduleDialog(false);
         fetchAdminData();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -251,12 +251,12 @@ export default function AdminPage() {
         body: JSON.stringify(holidayForm),
       });
       if (res.ok) {
-        toast({ title: "تمت الإضافة بنجاح" });
+        toast({ title: "Added successfully" });
         setShowHolidayDialog(false);
         fetchAdminData();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -269,12 +269,12 @@ export default function AdminPage() {
         body: JSON.stringify(leaveTypeForm),
       });
       if (res.ok) {
-        toast({ title: "تمت الإضافة بنجاح" });
+        toast({ title: "Added successfully" });
         setShowLeaveTypeDialog(false);
         fetchAdminData();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -283,7 +283,7 @@ export default function AdminPage() {
       const res = await fetch(`/api/admin/holidays/${id}`, { method: "DELETE" });
       if (res.ok) fetchAdminData();
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -292,7 +292,7 @@ export default function AdminPage() {
       const res = await fetch(`/api/admin/leave-types/${id}`, { method: "DELETE" });
       if (res.ok) fetchAdminData();
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -327,15 +327,15 @@ export default function AdminPage() {
         }
       );
       if (res.ok) {
-        toast({ title: editingBranch ? "تم تعديل الفرع بنجاح" : "تمت إضافة الفرع بنجاح" });
+        toast({ title: editingBranch ? "Branch updated successfully" : "Branch added successfully" });
         setShowBranchDialog(false);
         fetchAdminData();
       } else {
         const data = await res.json().catch(() => ({}));
-        toast({ title: "خطأ", description: data.error || "فشل في حفظ الفرع", variant: "destructive" });
+        toast({ title: "Error", description: data.error || "Failed to save branch", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حفظ الفرع", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save branch", variant: "destructive" });
     }
   }
 
@@ -347,53 +347,53 @@ export default function AdminPage() {
         body: JSON.stringify({ isActive: !branch.isActive }),
       });
       if (res.ok) {
-        toast({ title: branch.isActive ? "تم تعطيل الفرع" : "تم تفعيل الفرع" });
+        toast({ title: branch.isActive ? "Branch deactivated" : "Branch activated" });
         fetchAdminData();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">الإدارة</h1>
-        <p className="text-muted-foreground">إعدادات النظام والإدارة</p>
+        <h1 className="text-2xl font-bold">Administration</h1>
+        <p className="text-muted-foreground">System and administration settings</p>
       </div>
 
       <Tabs defaultValue="company">
         <TabsList>
           <TabsTrigger value="company">
             <Building2 className="mr-2 h-4 w-4" />
-            الشركة
+            Company
           </TabsTrigger>
           <TabsTrigger value="branches">
             <MapPin className="mr-2 h-4 w-4" />
-            الفروع
+            Branches
           </TabsTrigger>
           <TabsTrigger value="schedules">
             <Clock className="mr-2 h-4 w-4" />
-            جداول العمل
+            Work Schedules
           </TabsTrigger>
           <TabsTrigger value="holidays">
             <Calendar className="mr-2 h-4 w-4" />
-            العطل
+            Holidays
           </TabsTrigger>
           <TabsTrigger value="leave-types">
             <Tag className="mr-2 h-4 w-4" />
-            أنواع الإجازات
+            Leave Types
           </TabsTrigger>
           <TabsTrigger value="audit">
             <FileText className="mr-2 h-4 w-4" />
-            سجل التدقيق
+            Audit Log
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="company" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>بيانات الشركة</CardTitle>
+              <CardTitle>Company Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {loading ? (
@@ -409,21 +409,21 @@ export default function AdminPage() {
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>اسم الشركة (إنجليزي)</Label>
+                      <Label>Company Name (English)</Label>
                       <Input
                         value={company.name}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, name: e.target.value } : null)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>اسم الشركة (عربي)</Label>
+                      <Label>Company Name (Arabic)</Label>
                       <Input
                         value={company.nameAr || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, nameAr: e.target.value } : null)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>البريد الإلكتروني</Label>
+                      <Label>Email</Label>
                       <Input
                         value={company.email || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, email: e.target.value } : null)}
@@ -431,7 +431,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>الهاتف</Label>
+                      <Label>Phone</Label>
                       <Input
                         value={company.phone || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, phone: e.target.value } : null)}
@@ -439,21 +439,21 @@ export default function AdminPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>المدينة</Label>
+                      <Label>City</Label>
                       <Input
                         value={company.city || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, city: e.target.value } : null)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>البلد</Label>
+                      <Label>Country</Label>
                       <Input
                         value={company.country || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, country: e.target.value } : null)}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>الرقم الضريبي</Label>
+                      <Label>Tax Number</Label>
                       <Input
                         value={company.taxNumber || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, taxNumber: e.target.value } : null)}
@@ -461,7 +461,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>رقم ضريبة القيمة المضافة</Label>
+                      <Label>VAT Number</Label>
                       <Input
                         value={company.vatNumber || ""}
                         onChange={(e) => setCompany((prev) => prev ? { ...prev, vatNumber: e.target.value } : null)}
@@ -469,7 +469,7 @@ export default function AdminPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>نسبة الضريبة (%)</Label>
+                      <Label>VAT Rate (%)</Label>
                       <Input
                         type="number"
                         value={company.vatRate}
@@ -479,7 +479,7 @@ export default function AdminPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>العنوان</Label>
+                    <Label>Address</Label>
                     <Input
                       value={company.address || ""}
                       onChange={(e) => setCompany((prev) => prev ? { ...prev, address: e.target.value } : null)}
@@ -488,7 +488,7 @@ export default function AdminPage() {
                   <div className="flex justify-end">
                     <Button onClick={handleSaveCompany} disabled={saving}>
                       {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                      حفظ
+                      Save
                     </Button>
                   </div>
                 </>
@@ -500,29 +500,29 @@ export default function AdminPage() {
         <TabsContent value="branches" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>الفروع</CardTitle>
+              <CardTitle>Branches</CardTitle>
               <Button onClick={openAddBranchDialog}>
                 <Plus className="mr-2 h-4 w-4" />
-                إضافة فرع
+                Add Branch
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>المدينة</TableHead>
-                    <TableHead>الهاتف</TableHead>
-                    <TableHead>افتراضي</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>City</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Default</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-left">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {branches.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        لا توجد فروع
+                        No branches found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -530,18 +530,18 @@ export default function AdminPage() {
                       <TableRow key={branch.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{branch.nameAr || branch.name}</p>
+                            <p className="font-medium">{branch.name || branch.nameAr}</p>
                             {branch.city && <p className="text-xs text-muted-foreground">{branch.city}</p>}
                           </div>
                         </TableCell>
                         <TableCell>{branch.city || "-"}</TableCell>
                         <TableCell dir="ltr">{branch.phone || "-"}</TableCell>
                         <TableCell>
-                          {branch.isDefault && <Badge variant="success">افتراضي</Badge>}
+                          {branch.isDefault && <Badge variant="success">Default</Badge>}
                         </TableCell>
                         <TableCell>
                           <Badge variant={branch.isActive ? "success" : "destructive"}>
-                            {branch.isActive ? "نشط" : "غير نشط"}
+                            {branch.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -566,36 +566,36 @@ export default function AdminPage() {
         <TabsContent value="schedules" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>جداول العمل</CardTitle>
+              <CardTitle>Work Schedules</CardTitle>
               <Button onClick={() => setShowScheduleDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                إضافة جدول
+                Add Schedule
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>من</TableHead>
-                    <TableHead>إلى</TableHead>
-                    <TableHead>الأيام</TableHead>
-                    <TableHead>افتراضي</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>From</TableHead>
+                    <TableHead>To</TableHead>
+                    <TableHead>Days</TableHead>
+                    <TableHead>Default</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {schedules.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        لا توجد جداول
+                        No schedules found
                       </TableCell>
                     </TableRow>
                   ) : (
                     schedules.map((schedule) => {
                       const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
                       const dayLabels: Record<string, string> = {
-                        sunday: "أحد", monday: "إثنين", tuesday: "ثلاثاء",
-                        wednesday: "أربعاء", thursday: "خميس", friday: "جمعة", saturday: "سبت",
+                        sunday: "Sun", monday: "Mon", tuesday: "Tue",
+                        wednesday: "Wed", thursday: "Thu", friday: "Fri", saturday: "Sat",
                       };
                       const activeDays = days.filter((d) => (schedule as any)[d]).map((d) => dayLabels[d]);
                       return (
@@ -611,7 +611,7 @@ export default function AdminPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {schedule.isDefault && <Badge variant="success">افتراضي</Badge>}
+                            {schedule.isDefault && <Badge variant="success">Default</Badge>}
                           </TableCell>
                         </TableRow>
                       );
@@ -626,27 +626,27 @@ export default function AdminPage() {
         <TabsContent value="holidays" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>العطل الرسمية</CardTitle>
+              <CardTitle>Public Holidays</CardTitle>
               <Button onClick={() => setShowHolidayDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                إضافة عطلة
+                Add Holiday
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>التاريخ</TableHead>
-                    <TableHead>متكررة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Recurring</TableHead>
+                    <TableHead className="text-left">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {holidays.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center py-8">
-                        لا توجد عطل
+                        No holidays found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -661,7 +661,7 @@ export default function AdminPage() {
                         <TableCell>{formatDate(holiday.date)}</TableCell>
                         <TableCell>
                           <Badge variant={holiday.isRecurring ? "default" : "secondary"}>
-                            {holiday.isRecurring ? "نعم" : "لا"}
+                            {holiday.isRecurring ? "Yes" : "No"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -681,28 +681,28 @@ export default function AdminPage() {
         <TabsContent value="leave-types" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>أنواع الإجازات</CardTitle>
+              <CardTitle>Leave Types</CardTitle>
               <Button onClick={() => setShowLeaveTypeDialog(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                إضافة نوع
+                Add Type
               </Button>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>الأيام الافتراضية</TableHead>
-                    <TableHead>مدفوعة</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Default Days</TableHead>
+                    <TableHead>Paid</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-left">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {leaveTypes.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-8">
-                        لا توجد أنواع إجازات
+                        No leave types found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -717,12 +717,12 @@ export default function AdminPage() {
                         <TableCell>{lt.defaultDays}</TableCell>
                         <TableCell>
                           <Badge variant={lt.isPaid ? "success" : "secondary"}>
-                            {lt.isPaid ? "مدفوعة" : "غير مدفوعة"}
+                            {lt.isPaid ? "Paid" : "Unpaid"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant={lt.isActive ? "success" : "destructive"}>
-                            {lt.isActive ? "نشط" : "غير نشط"}
+                            {lt.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -742,23 +742,23 @@ export default function AdminPage() {
         <TabsContent value="audit" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>سجل التدقيق</CardTitle>
+              <CardTitle>Audit Log</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>المستخدم</TableHead>
-                    <TableHead>الإجراء</TableHead>
-                    <TableHead>الكيان</TableHead>
-                    <TableHead>الوقت</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Entity</TableHead>
+                    <TableHead>Time</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {auditLogs.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center py-8">
-                        لا توجد سجلات
+                        No records found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -781,21 +781,21 @@ export default function AdminPage() {
       <Dialog open={showBranchDialog} onOpenChange={setShowBranchDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingBranch ? "تعديل الفرع" : "إضافة فرع جديد"}</DialogTitle>
+            <DialogTitle>{editingBranch ? "Edit Branch" : "Add New Branch"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveBranch} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>الاسم (عربي)</Label>
+                <Label>Name (Arabic)</Label>
                 <Input
                   value={branchForm.nameAr}
                   onChange={(e) => setBranchForm((prev) => ({ ...prev, nameAr: e.target.value }))}
-                  placeholder="المقر الرئيسي - القاهرة"
+                  placeholder="Head Office - Cairo"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label>الاسم (إنجليزي)</Label>
+                <Label>Name (English)</Label>
                 <Input
                   value={branchForm.name}
                   onChange={(e) => setBranchForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -805,14 +805,14 @@ export default function AdminPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>المدينة</Label>
+                <Label>City</Label>
                 <Input
                   value={branchForm.city}
                   onChange={(e) => setBranchForm((prev) => ({ ...prev, city: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>الهاتف</Label>
+                <Label>Phone</Label>
                 <Input
                   value={branchForm.phone}
                   onChange={(e) => setBranchForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -821,7 +821,7 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>العنوان</Label>
+              <Label>Address</Label>
               <Input
                 value={branchForm.address}
                 onChange={(e) => setBranchForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -832,13 +832,13 @@ export default function AdminPage() {
                 checked={branchForm.isDefault}
                 onCheckedChange={(checked) => setBranchForm((prev) => ({ ...prev, isDefault: checked }))}
               />
-              <Label>فرع افتراضي</Label>
+              <Label>Default Branch</Label>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowBranchDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
-              <Button type="submit">{editingBranch ? "حفظ" : "إضافة"}</Button>
+              <Button type="submit">{editingBranch ? "Save" : "Add"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -847,11 +847,11 @@ export default function AdminPage() {
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>إضافة جدول عمل</DialogTitle>
+            <DialogTitle>Add Work Schedule</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddSchedule} className="space-y-4">
             <div className="space-y-2">
-              <Label>اسم الجدول</Label>
+              <Label>Schedule Name</Label>
               <Input
                 value={scheduleForm.name}
                 onChange={(e) => setScheduleForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -860,7 +860,7 @@ export default function AdminPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>وقت البداية</Label>
+                <Label>Start Time</Label>
                 <Input
                   type="time"
                   value={scheduleForm.startTime}
@@ -869,7 +869,7 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>وقت النهاية</Label>
+                <Label>End Time</Label>
                 <Input
                   type="time"
                   value={scheduleForm.endTime}
@@ -879,16 +879,16 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>أيام العمل</Label>
+              <Label>Working Days</Label>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { key: "sunday", label: "أحد" },
-                  { key: "monday", label: "إثنين" },
-                  { key: "tuesday", label: "ثلاثاء" },
-                  { key: "wednesday", label: "أربعاء" },
-                  { key: "thursday", label: "خميس" },
-                  { key: "friday", label: "جمعة" },
-                  { key: "saturday", label: "سبت" },
+                  { key: "sunday", label: "Sun" },
+                  { key: "monday", label: "Mon" },
+                  { key: "tuesday", label: "Tue" },
+                  { key: "wednesday", label: "Wed" },
+                  { key: "thursday", label: "Thu" },
+                  { key: "friday", label: "Fri" },
+                  { key: "saturday", label: "Sat" },
                 ].map((day) => (
                   <div key={day.key} className="flex items-center gap-2">
                     <Switch
@@ -904,9 +904,9 @@ export default function AdminPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowScheduleDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
-              <Button type="submit">إضافة</Button>
+              <Button type="submit">Add</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -915,12 +915,12 @@ export default function AdminPage() {
       <Dialog open={showHolidayDialog} onOpenChange={setShowHolidayDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>إضافة عطلة رسمية</DialogTitle>
+            <DialogTitle>Add Public Holiday</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddHoliday} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>الاسم (إنجليزي)</Label>
+                <Label>Name (English)</Label>
                 <Input
                   value={holidayForm.name}
                   onChange={(e) => setHolidayForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -928,7 +928,7 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>الاسم (عربي)</Label>
+                <Label>Name (Arabic)</Label>
                 <Input
                   value={holidayForm.nameAr}
                   onChange={(e) => setHolidayForm((prev) => ({ ...prev, nameAr: e.target.value }))}
@@ -936,7 +936,7 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>التاريخ</Label>
+              <Label>Date</Label>
               <Input
                 type="date"
                 value={holidayForm.date}
@@ -949,13 +949,13 @@ export default function AdminPage() {
                 checked={holidayForm.isRecurring}
                 onCheckedChange={(checked) => setHolidayForm((prev) => ({ ...prev, isRecurring: checked }))}
               />
-              <Label>متكررة سنوياً</Label>
+              <Label>Recurs annually</Label>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowHolidayDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
-              <Button type="submit">إضافة</Button>
+              <Button type="submit">Add</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -964,12 +964,12 @@ export default function AdminPage() {
       <Dialog open={showLeaveTypeDialog} onOpenChange={setShowLeaveTypeDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>إضافة نوع إجازة</DialogTitle>
+            <DialogTitle>Add Leave Type</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddLeaveType} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>الاسم (إنجليزي)</Label>
+                <Label>Name (English)</Label>
                 <Input
                   value={leaveTypeForm.name}
                   onChange={(e) => setLeaveTypeForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -977,7 +977,7 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>الاسم (عربي)</Label>
+                <Label>Name (Arabic)</Label>
                 <Input
                   value={leaveTypeForm.nameAr}
                   onChange={(e) => setLeaveTypeForm((prev) => ({ ...prev, nameAr: e.target.value }))}
@@ -985,7 +985,7 @@ export default function AdminPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>الأيام الافتراضية</Label>
+              <Label>Default Days</Label>
               <Input
                 type="number"
                 value={leaveTypeForm.defaultDays}
@@ -998,13 +998,13 @@ export default function AdminPage() {
                 checked={leaveTypeForm.isPaid}
                 onCheckedChange={(checked) => setLeaveTypeForm((prev) => ({ ...prev, isPaid: checked }))}
               />
-              <Label>إجازة مدفوعة</Label>
+              <Label>Paid Leave</Label>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowLeaveTypeDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
-              <Button type="submit">إضافة</Button>
+              <Button type="submit">Add</Button>
             </DialogFooter>
           </form>
         </DialogContent>

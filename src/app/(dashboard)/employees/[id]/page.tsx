@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
-  ArrowRight,
+  ArrowLeft,
   Loader2,
   Save,
   Plus,
@@ -230,13 +230,13 @@ export default function EmployeeDetailPage() {
         body: JSON.stringify(profileForm),
       });
       if (res.ok) {
-        toast({ title: "تم حفظ البيانات بنجاح" });
+        toast({ title: "Saved successfully" });
         fetchEmployee();
       } else {
-        toast({ title: "خطأ", description: "فشل في حفظ البيانات", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to save data", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حفظ البيانات", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save data", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -244,7 +244,7 @@ export default function EmployeeDetailPage() {
 
   async function handleSaveSalary() {
     if (!salaryForm.baseSalary || salaryForm.baseSalary <= 0) {
-      toast({ title: "خطأ", description: "أدخل الراتب الأساسي", variant: "destructive" });
+      toast({ title: "Error", description: "Enter the base salary", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -255,14 +255,14 @@ export default function EmployeeDetailPage() {
         body: JSON.stringify({ salary: salaryForm }),
       });
       if (res.ok) {
-        toast({ title: "تم حفظ الراتب بنجاح" });
+        toast({ title: "Salary saved successfully" });
         setSalaryFormOpen(false);
         fetchEmployee();
       } else {
-        toast({ title: "خطأ", description: "فشل في حفظ الراتب", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to save salary", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حفظ الراتب", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save salary", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -307,7 +307,7 @@ export default function EmployeeDetailPage() {
     if (!profile) return;
 
     if (!componentForm.nameAr || componentForm.amount <= 0) {
-      toast({ title: "خطأ", description: "أدخل الاسم والمبلغ", variant: "destructive" });
+      toast({ title: "Error", description: "Enter the name and amount", variant: "destructive" });
       return;
     }
 
@@ -342,14 +342,14 @@ export default function EmployeeDetailPage() {
             }),
           });
       if (res.ok) {
-        toast({ title: editingComponent ? "تم تعديل البند" : "تم إضافة البند" });
+        toast({ title: editingComponent ? "Component updated" : "Component added" });
         setComponentDialogOpen(false);
         fetchEmployee();
       } else {
-        toast({ title: "خطأ", description: "فشل في حفظ البند", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to save component", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حفظ البند", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to save component", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -362,13 +362,13 @@ export default function EmployeeDetailPage() {
         method: "DELETE",
       });
       if (res.ok) {
-        toast({ title: "تم حذف البند" });
+        toast({ title: "Component deleted" });
         fetchEmployee();
       } else {
-        toast({ title: "خطأ", description: "فشل في حذف البند", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to delete component", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في حذف البند", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to delete component", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -383,13 +383,13 @@ export default function EmployeeDetailPage() {
         body: JSON.stringify({ isActive: !comp.isActive }),
       });
       if (res.ok) {
-        toast({ title: comp.isActive ? "تم تعطيل البند" : "تم تفعيل البند" });
+        toast({ title: comp.isActive ? "Component deactivated" : "Component activated" });
         fetchEmployee();
       } else {
-        toast({ title: "خطأ", description: "فشل في تحديث البند", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to update component", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في تحديث البند", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to update component", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -408,9 +408,9 @@ export default function EmployeeDetailPage() {
   if (!employee) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">لم يتم العثور على الموظف</p>
+        <p className="text-muted-foreground">Employee not found</p>
         <Button variant="link" onClick={() => router.push("/employees")}>
-          العودة للقائمة
+          Back to list
         </Button>
       </div>
     );
@@ -423,20 +423,14 @@ export default function EmployeeDetailPage() {
       TERMINATED: "destructive",
       SUSPENDED: "destructive",
     };
-    const labels: Record<string, string> = {
-      ACTIVE: "نشط",
-      ON_LEAVE: "في إجازة",
-      TERMINATED: "منتهي",
-      SUSPENDED: "معلق",
-    };
-    return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
+    return <Badge variant={variants[status] || "default"}>{EMPLOYMENT_STATUS_LABELS[status] || status}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push("/employees")}>
-          <ArrowRight className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <div className="flex items-center gap-3">
@@ -452,67 +446,67 @@ export default function EmployeeDetailPage() {
         <TabsList>
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
-            الملف الشخصي
+            Profile
           </TabsTrigger>
           <TabsTrigger value="salary">
             <Wallet className="mr-2 h-4 w-4" />
-            الراتب
+            Salary
           </TabsTrigger>
           <TabsTrigger value="schedule">
             <Calendar className="mr-2 h-4 w-4" />
-            الجدول
+            Schedule
           </TabsTrigger>
           <TabsTrigger value="attendance">
             <Clock className="mr-2 h-4 w-4" />
-            الحضور
+            Attendance
           </TabsTrigger>
           <TabsTrigger value="leave">
             <FileText className="mr-2 h-4 w-4" />
-            الإجازات
+            Leave
           </TabsTrigger>
           <TabsTrigger value="payroll">
             <Wallet className="mr-2 h-4 w-4" />
-            الرواتب
+            Payroll
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>البيانات الشخصية</CardTitle>
+              <CardTitle>Personal Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>الاسم الأول (إنجليزي)</Label>
+                  <Label>First Name (English)</Label>
                   <Input
                     value={profileForm.firstName}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, firstName: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>اسم العائلة (إنجليزي)</Label>
+                  <Label>Last Name (English)</Label>
                   <Input
                     value={profileForm.lastName}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, lastName: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الاسم الأول (عربي)</Label>
+                  <Label>First Name (Arabic)</Label>
                   <Input
                     value={profileForm.firstNameAr}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, firstNameAr: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>اسم العائلة (عربي)</Label>
+                  <Label>Last Name (Arabic)</Label>
                   <Input
                     value={profileForm.lastNameAr}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, lastNameAr: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>البريد الإلكتروني</Label>
+                  <Label>Email</Label>
                   <Input
                     type="email"
                     value={profileForm.email}
@@ -521,7 +515,7 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الهاتف</Label>
+                  <Label>Phone</Label>
                   <Input
                     value={profileForm.phone}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -529,7 +523,7 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الرقم الوطني</Label>
+                  <Label>National ID</Label>
                   <Input
                     value={profileForm.nationalId}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, nationalId: e.target.value }))}
@@ -537,7 +531,7 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>تاريخ الميلاد</Label>
+                  <Label>Date of Birth</Label>
                   <Input
                     type="date"
                     value={profileForm.dateOfBirth}
@@ -545,78 +539,78 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الجنس</Label>
+                  <Label>Gender</Label>
                   <Select
                     value={profileForm.gender}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, gender: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر" />
+                      <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MALE">ذكر</SelectItem>
-                      <SelectItem value="FEMALE">أنثى</SelectItem>
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>الحالة الاجتماعية</Label>
+                  <Label>Marital Status</Label>
                   <Select
                     value={profileForm.maritalStatus}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, maritalStatus: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر" />
+                      <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="SINGLE">أعزب</SelectItem>
-                      <SelectItem value="MARRIED">متزوج</SelectItem>
-                      <SelectItem value="DIVORCED">مطلق</SelectItem>
-                      <SelectItem value="WIDOWED">أرمل</SelectItem>
+                      <SelectItem value="SINGLE">Single</SelectItem>
+                      <SelectItem value="MARRIED">Married</SelectItem>
+                      <SelectItem value="DIVORCED">Divorced</SelectItem>
+                      <SelectItem value="WIDOWED">Widowed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>المسمى الوظيفي</Label>
+                  <Label>Job Title</Label>
                   <Input
                     value={profileForm.jobTitle}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, jobTitle: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الفرع</Label>
+                  <Label>Branch</Label>
                   <Select
                     value={profileForm.branchId || ""}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, branchId: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر الفرع" />
+                      <SelectValue placeholder="Select branch" />
                     </SelectTrigger>
                     <SelectContent>
                       {branches.map((b) => (
-                        <SelectItem key={b.id} value={b.id}>{b.nameAr || b.name}</SelectItem>
+                        <SelectItem key={b.id} value={b.id}>{b.name || b.nameAr}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>القسم</Label>
+                  <Label>Department</Label>
                   <Select
                     value={profileForm.departmentId || ""}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, departmentId: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر القسم" />
+                      <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>{d.nameAr || d.name}</SelectItem>
+                        <SelectItem key={d.id} value={d.id}>{d.name || d.nameAr}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>حالة التوظيف</Label>
+                  <Label>Employment Status</Label>
                   <Select
                     value={profileForm.employmentStatus || "ACTIVE"}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, employmentStatus: value }))}
@@ -632,27 +626,27 @@ export default function EmployeeDetailPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>المدينة</Label>
+                  <Label>City</Label>
                   <Input
                     value={profileForm.city}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, city: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الدولة</Label>
+                  <Label>Country</Label>
                   <Input
                     value={profileForm.country}
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, country: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المحافظة</Label>
+                  <Label>Governorate</Label>
                   <Select
                     value={profileForm.governorate || ""}
                     onValueChange={(value) => setProfileForm((prev) => ({ ...prev, governorate: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر المحافظة" />
+                      <SelectValue placeholder="Select governorate" />
                     </SelectTrigger>
                     <SelectContent>
                       {EGYPT_GOVERNORATES.map((g) => (
@@ -663,7 +657,7 @@ export default function EmployeeDetailPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>العنوان</Label>
+                <Label>Address</Label>
                 <Input
                   value={profileForm.address}
                   onChange={(e) => setProfileForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -672,7 +666,7 @@ export default function EmployeeDetailPage() {
               <div className="flex justify-end">
                 <Button onClick={handleSaveProfile} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  حفظ
+                  Save
                 </Button>
               </div>
             </CardContent>
@@ -683,17 +677,17 @@ export default function EmployeeDetailPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>بيانات الراتب</CardTitle>
+                <CardTitle>Salary Information</CardTitle>
                 <Button variant="outline" size="sm" onClick={openSalaryForm}>
                   {employee.salaryProfiles.length === 0 ? (
                     <>
                       <Plus className="mr-2 h-4 w-4" />
-                      إضافة راتب
+                      Add Salary
                     </>
                   ) : (
                     <>
                       <Pencil className="mr-2 h-4 w-4" />
-                      تعديل
+                      Edit
                     </>
                   )}
                 </Button>
@@ -703,40 +697,40 @@ export default function EmployeeDetailPage() {
               {employee.salaryProfiles.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Wallet className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground">لم يتم تعيين راتب بعد</p>
+                  <p className="text-muted-foreground">No salary has been assigned yet</p>
                 </div>
               ) : (
                 employee.salaryProfiles.map((profile) => (
                   <div key={profile.id} className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
                       <div className="rounded-lg border p-4">
-                        <p className="text-sm text-muted-foreground">الراتب الأساسي</p>
+                        <p className="text-sm text-muted-foreground">Base Salary</p>
                         <p className="text-lg font-bold">{formatCurrency(Number(profile.baseSalary))}</p>
                       </div>
                       <div className="rounded-lg border p-4">
-                        <p className="text-sm text-muted-foreground">تاريخ السريان</p>
+                        <p className="text-sm text-muted-foreground">Effective Date</p>
                         <p className="text-lg font-bold">{formatDate(profile.effectiveFrom)}</p>
                       </div>
                       <div className="rounded-lg border p-4">
-                        <p className="text-sm text-muted-foreground">العملة</p>
+                        <p className="text-sm text-muted-foreground">Currency</p>
                         <p className="text-lg font-bold">{profile.currency}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium">بنود الراتب</h3>
+                      <h3 className="text-sm font-medium">Salary Components</h3>
                       <Button variant="outline" size="sm" onClick={openAddComponentDialog}>
                         <Plus className="mr-2 h-4 w-4" />
-                        إضافة بند
+                        Add Component
                       </Button>
                     </div>
                     {profile.components.length > 0 && (
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>النوع</TableHead>
-                            <TableHead>الاسم</TableHead>
-                            <TableHead>المبلغ</TableHead>
-                            <TableHead>الحالة</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead className="w-28"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -748,14 +742,14 @@ export default function EmployeeDetailPage() {
                                   {componentTypeLabels[comp.type] || comp.type}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{comp.nameAr || comp.name}</TableCell>
+                              <TableCell>{comp.name || comp.nameAr}</TableCell>
                               <TableCell>
                                 {formatCurrency(Number(comp.amount))}
                                 {comp.isPercentage && " (%)"}
                               </TableCell>
                               <TableCell>
                                 <Badge variant={comp.isActive ? "success" : "secondary"}>
-                                  {comp.isActive ? "نشط" : "غير نشط"}
+                                  {comp.isActive ? "Active" : "Inactive"}
                                 </Badge>
                               </TableCell>
                               <TableCell>
@@ -777,7 +771,7 @@ export default function EmployeeDetailPage() {
                       </Table>
                     )}
                     {profile.components.length === 0 && (
-                      <p className="text-sm text-muted-foreground text-center py-4">لا توجد بنود راتب</p>
+                      <p className="text-sm text-muted-foreground text-center py-4">No salary components found</p>
                     )}
                   </div>
                 ))
@@ -788,12 +782,12 @@ export default function EmployeeDetailPage() {
           {salaryFormOpen && (
             <Card>
               <CardHeader>
-                <CardTitle>{employee.salaryProfiles.length === 0 ? "إضافة راتب" : "تعديل الراتب"}</CardTitle>
+                <CardTitle>{employee.salaryProfiles.length === 0 ? "Add Salary" : "Edit Salary"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
-                    <Label>الراتب الأساسي *</Label>
+                    <Label>Base Salary *</Label>
                     <Input
                       type="number"
                       value={salaryForm.baseSalary}
@@ -803,7 +797,7 @@ export default function EmployeeDetailPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>معدل العمل الإضافي</Label>
+                    <Label>Overtime Rate</Label>
                     <Input
                       type="number"
                       value={salaryForm.overtimeRate}
@@ -813,7 +807,7 @@ export default function EmployeeDetailPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>معدل الساعة</Label>
+                    <Label>Hourly Rate</Label>
                     <Input
                       type="number"
                       value={salaryForm.hourlyRate}
@@ -825,11 +819,11 @@ export default function EmployeeDetailPage() {
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setSalaryFormOpen(false)}>
-                    إلغاء
+                    Cancel
                   </Button>
                   <Button onClick={handleSaveSalary} disabled={saving}>
                     {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    حفظ
+                    Save
                   </Button>
                 </div>
               </CardContent>
@@ -839,11 +833,11 @@ export default function EmployeeDetailPage() {
           <Dialog open={componentDialogOpen} onOpenChange={setComponentDialogOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingComponent ? "تعديل البند" : "إضافة بند راتب"}</DialogTitle>
+                <DialogTitle>{editingComponent ? "Edit Component" : "Add Salary Component"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>النوع *</Label>
+                  <Label>Type *</Label>
                   <Select
                     value={componentForm.type}
                     onValueChange={(value) => setComponentForm((prev) => ({ ...prev, type: value }))}
@@ -859,15 +853,15 @@ export default function EmployeeDetailPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>اسم البند *</Label>
+                  <Label>Component Name (Arabic) *</Label>
                   <Input
                     value={componentForm.nameAr}
                     onChange={(e) => setComponentForm((prev) => ({ ...prev, nameAr: e.target.value }))}
-                    placeholder="مثال: بدل سكن"
+                    placeholder="e.g. Housing Allowance"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>الاسم الداخلي (إنجليزي - اختياري)</Label>
+                  <Label>Internal Name (English - optional)</Label>
                   <Input
                     value={componentForm.name}
                     onChange={(e) => setComponentForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -876,7 +870,7 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المبلغ *</Label>
+                  <Label>Amount *</Label>
                   <Input
                     type="number"
                     value={componentForm.amount}
@@ -892,7 +886,7 @@ export default function EmployeeDetailPage() {
                       checked={componentForm.isPercentage}
                       onCheckedChange={(checked) => setComponentForm((prev) => ({ ...prev, isPercentage: !!checked }))}
                     />
-                    <Label htmlFor="isPercentage" className="cursor-pointer">نسبة مئوية</Label>
+                    <Label htmlFor="isPercentage" className="cursor-pointer">Percentage</Label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox
@@ -900,15 +894,15 @@ export default function EmployeeDetailPage() {
                       checked={componentForm.isRecurring}
                       onCheckedChange={(checked) => setComponentForm((prev) => ({ ...prev, isRecurring: !!checked }))}
                     />
-                    <Label htmlFor="isRecurring" className="cursor-pointer">متكرر شهرياً</Label>
+                    <Label htmlFor="isRecurring" className="cursor-pointer">Recurs monthly</Label>
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setComponentDialogOpen(false)}>إلغاء</Button>
+                <Button variant="outline" onClick={() => setComponentDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleSaveComponent} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  حفظ
+                  Save
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -918,11 +912,11 @@ export default function EmployeeDetailPage() {
         <TabsContent value="schedule" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>الجدول الحالي</CardTitle>
+              <CardTitle>Current Schedule</CardTitle>
             </CardHeader>
             <CardContent>
               {employee.scheduleAssignments.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">لم يتم تعيين جدول بعد</p>
+                <p className="text-muted-foreground text-center py-4">No schedule has been assigned yet</p>
               ) : (
                 <div className="space-y-4">
                   {employee.scheduleAssignments.map((assignment) => (
@@ -934,7 +928,7 @@ export default function EmployeeDetailPage() {
                             {assignment.schedule.startTime} - {assignment.schedule.endTime}
                           </p>
                         </div>
-                        <Badge variant="secondary">منذ {formatDate(assignment.effectiveFrom)}</Badge>
+                        <Badge variant="secondary">Since {formatDate(assignment.effectiveFrom)}</Badge>
                       </div>
                     </div>
                   ))}
@@ -947,19 +941,19 @@ export default function EmployeeDetailPage() {
         <TabsContent value="attendance" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>ملخص الحضور - الشهر الحالي</CardTitle>
+              <CardTitle>Attendance Summary - Current Month</CardTitle>
             </CardHeader>
             <CardContent>
               {employee.attendanceDays.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">لا توجد سجلات حضور</p>
+                <p className="text-muted-foreground text-center py-4">No attendance records found</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>ساعات العمل</TableHead>
-                      <TableHead>التأخير (دقيقة)</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Hours Worked</TableHead>
+                      <TableHead>Late (min)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -985,20 +979,20 @@ export default function EmployeeDetailPage() {
         <TabsContent value="leave" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>سجل الإجازات</CardTitle>
+              <CardTitle>Leave History</CardTitle>
             </CardHeader>
             <CardContent>
               {employee.leaveRequests.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">لا توجد طلبات إجازة</p>
+                <p className="text-muted-foreground text-center py-4">No leave requests found</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>النوع</TableHead>
-                      <TableHead>من</TableHead>
-                      <TableHead>إلى</TableHead>
-                      <TableHead>الأيام</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>From</TableHead>
+                      <TableHead>To</TableHead>
+                      <TableHead>Days</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1025,19 +1019,19 @@ export default function EmployeeDetailPage() {
         <TabsContent value="payroll" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>سجل الرواتب</CardTitle>
+              <CardTitle>Payroll History</CardTitle>
             </CardHeader>
             <CardContent>
               {employee.payrollRecords.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">لا توجد سجلات رواتب</p>
+                <p className="text-muted-foreground text-center py-4">No payroll records found</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الفترة</TableHead>
-                      <TableHead>الإجمالي</TableHead>
-                      <TableHead>الصافي</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead>Period</TableHead>
+                      <TableHead>Gross</TableHead>
+                      <TableHead>Net</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

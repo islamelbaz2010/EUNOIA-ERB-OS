@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { formatZodError } from "@/lib/validation";
 import { requireRole } from "@/lib/authorization";
 
 const createInvoiceSchema = z.object({
   clientId: z.string().uuid(),
-  dueDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date" }),
+  dueDate: z
+    .string()
+    .min(1, "Due date is required")
+    .refine((val) => !isNaN(Date.parse(val)), { message: "must be a valid date" }),
   discount: z.number().min(0).optional(),
   vatEnabled: z.boolean().optional(),
   notes: z.string().optional(),
@@ -186,7 +190,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(invoice, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 });
+      return NextResponse.json({ error: formatZodError(error), details: error.issues }, { status: 400 });
     }
     console.error("POST /api/invoices error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

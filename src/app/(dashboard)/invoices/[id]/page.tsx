@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  ArrowRight,
+  ArrowLeft,
   Download,
   CreditCard,
   Loader2,
@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PAYMENT_METHOD_LABELS } from "@/lib/constants";
+import { PAYMENT_METHOD_LABELS, INVOICE_STATUS_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -108,14 +108,14 @@ export default function InvoiceDetailPage() {
         body: JSON.stringify({ ...paymentForm, invoiceId }),
       });
       if (res.ok) {
-        toast({ title: "تم تسجيل الدفعة بنجاح" });
+        toast({ title: "Payment recorded successfully" });
         setShowPaymentDialog(false);
         fetchInvoice();
       } else {
-        toast({ title: "خطأ", variant: "destructive" });
+        toast({ title: "Error", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setRecording(false);
     }
@@ -133,7 +133,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">لم يتم العثور على الفاتورة</p>
+        <p className="text-muted-foreground">Invoice not found</p>
       </div>
     );
   }
@@ -149,14 +149,7 @@ export default function InvoiceDetailPage() {
       PARTIALLY_PAID: "warning",
       OVERDUE: "destructive",
     };
-    const labels: Record<string, string> = {
-      DRAFT: "مسودة",
-      SENT: "مرسلة",
-      PAID: "مدفوعة",
-      PARTIALLY_PAID: "مدفوعة جزئياً",
-      OVERDUE: "متأخرة",
-    };
-    return <Badge variant={map[status] || "default"}>{labels[status] || status}</Badge>;
+    return <Badge variant={map[status] || "default"}>{INVOICE_STATUS_LABELS[status] || status}</Badge>;
   };
 
   return (
@@ -164,7 +157,7 @@ export default function InvoiceDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push("/invoices")}>
-            <ArrowRight className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <div className="flex items-center gap-3">
@@ -180,12 +173,12 @@ export default function InvoiceDetailPage() {
             onClick={() => window.open(`/api/invoices/${invoiceId}/pdf`, "_blank")}
           >
             <Download className="mr-2 h-4 w-4" />
-            تحميل PDF
+            Download PDF
           </Button>
           {remaining > 0 && (
             <Button onClick={() => setShowPaymentDialog(true)}>
               <CreditCard className="mr-2 h-4 w-4" />
-              تسجيل دفعة
+              Record Payment
             </Button>
           )}
         </div>
@@ -195,16 +188,16 @@ export default function InvoiceDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>تفاصيل الفاتورة</CardTitle>
+              <CardTitle>Invoice Details</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الوصف</TableHead>
-                    <TableHead className="text-center">الكمية</TableHead>
-                    <TableHead className="text-left">سعر الوحدة</TableHead>
-                    <TableHead className="text-left">المبلغ</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="text-center">Qty</TableHead>
+                    <TableHead className="text-left">Unit Price</TableHead>
+                    <TableHead className="text-left">Amount</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -224,16 +217,16 @@ export default function InvoiceDetailPage() {
           {invoice.payments.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>سجل المدفوعات</CardTitle>
+                <CardTitle>Payment History</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead>المبلغ</TableHead>
-                      <TableHead>الطريقة</TableHead>
-                      <TableHead>المرجع</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Method</TableHead>
+                      <TableHead>Reference</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -255,35 +248,35 @@ export default function InvoiceDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>الملخص المالي</CardTitle>
+              <CardTitle>Financial Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">المجموع الفرعي</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatCurrency(Number(invoice.subtotal))}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">الخصم</span>
+                <span className="text-muted-foreground">Discount</span>
                 <span>-{formatCurrency(Number(invoice.discount))}</span>
               </div>
               {invoice.vatEnabled && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">الضريبة ({invoice.vatRate}%)</span>
+                  <span className="text-muted-foreground">VAT ({invoice.vatRate}%)</span>
                   <span>{formatCurrency(Number(invoice.vatAmount))}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-bold text-lg">
-                <span>الإجمالي</span>
+                <span>Total</span>
                 <span>{formatCurrency(Number(invoice.total))}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-success">
-                <span>المدفوع</span>
+                <span>Paid</span>
                 <span>{formatCurrency(paid)}</span>
               </div>
               <div className="flex justify-between text-destructive font-medium">
-                <span>المتبقي</span>
+                <span>Outstanding</span>
                 <span>{formatCurrency(remaining)}</span>
               </div>
             </CardContent>
@@ -291,7 +284,7 @@ export default function InvoiceDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>بيانات العميل</CardTitle>
+              <CardTitle>Client Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p className="font-medium">{invoice.client.name}</p>
@@ -303,15 +296,15 @@ export default function InvoiceDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>تواريخ الفاتورة</CardTitle>
+              <CardTitle>Invoice Dates</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">تاريخ الإصدار</span>
+                <span className="text-muted-foreground">Issue Date</span>
                 <span>{formatDate(invoice.date)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">تاريخ الاستحقاق</span>
+                <span className="text-muted-foreground">Due Date</span>
                 <span>{formatDate(invoice.dueDate)}</span>
               </div>
             </CardContent>
@@ -322,12 +315,12 @@ export default function InvoiceDetailPage() {
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تسجيل دفعة</DialogTitle>
-            <DialogDescription>المتبقي: {formatCurrency(remaining)}</DialogDescription>
+            <DialogTitle>Record Payment</DialogTitle>
+            <DialogDescription>Outstanding: {formatCurrency(remaining)}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>المبلغ</Label>
+              <Label>Amount</Label>
               <Input
                 type="number"
                 value={paymentForm.amount}
@@ -336,7 +329,7 @@ export default function InvoiceDetailPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>طريقة الدفع</Label>
+              <Label>Payment Method</Label>
               <Select
                 value={paymentForm.method}
                 onValueChange={(value) => setPaymentForm((prev) => ({ ...prev, method: value }))}
@@ -345,29 +338,29 @@ export default function InvoiceDetailPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CASH">نقدي</SelectItem>
-                  <SelectItem value="BANK_TRANSFER">تحويل بنكي</SelectItem>
-                  <SelectItem value="CHECK">شيك</SelectItem>
-                  <SelectItem value="CREDIT_CARD">بطاقة ائتمان</SelectItem>
+                  <SelectItem value="CASH">Cash</SelectItem>
+                  <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                  <SelectItem value="CHECK">Check</SelectItem>
+                  <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>المرجع</Label>
+              <Label>Reference</Label>
               <Input
                 value={paymentForm.reference}
                 onChange={(e) => setPaymentForm((prev) => ({ ...prev, reference: e.target.value }))}
-                placeholder="رقم التحويل / الشيك"
+                placeholder="Transfer / check number"
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
-              إلغاء
+              Cancel
             </Button>
             <Button onClick={handleRecordPayment} disabled={recording}>
               {recording ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              تسجيل الدفعة
+              Record Payment
             </Button>
           </DialogFooter>
         </DialogContent>

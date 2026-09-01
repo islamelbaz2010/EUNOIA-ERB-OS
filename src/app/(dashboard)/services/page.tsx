@@ -118,15 +118,15 @@ export default function ServicesPage() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
-        toast({ title: editingId ? "تم التحديث بنجاح" : "تمت الإضافة بنجاح" });
+        toast({ title: editingId ? "Updated successfully" : "Added successfully" });
         setShowDialog(false);
         fetchServices();
       } else {
         const data = await res.json();
-        toast({ title: "خطأ", description: data.error, variant: "destructive" });
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -136,11 +136,11 @@ export default function ServicesPage() {
     try {
       const res = await fetch(`/api/services/${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast({ title: "تم الحذف بنجاح" });
+        toast({ title: "Deleted successfully" });
         fetchServices();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
@@ -154,23 +154,23 @@ export default function ServicesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">الخدمات</h1>
-          <p className="text-muted-foreground">إدارة الخدمات المقدمة</p>
+          <h1 className="text-2xl font-bold">Services</h1>
+          <p className="text-muted-foreground">Manage the services you offer</p>
         </div>
         <Button onClick={openAddDialog}>
           <Plus className="mr-2 h-4 w-4" />
-          إضافة خدمة
+          Add Service
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>قائمة الخدمات</CardTitle>
+            <CardTitle>Service List</CardTitle>
             <div className="relative">
               <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="بحث..."
+                placeholder="Search..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pr-9 w-64"
@@ -182,13 +182,13 @@ export default function ServicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>الاسم</TableHead>
-                <TableHead>الاسم (عربي)</TableHead>
-                <TableHead>السعر الافتراضي</TableHead>
-                <TableHead>الوحدة</TableHead>
-                <TableHead>ضريبة</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Arabic Name</TableHead>
+                <TableHead>Default Price</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead>Taxable</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-left">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -203,7 +203,7 @@ export default function ServicesPage() {
               ) : filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    لا توجد خدمات
+                    No services found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -215,14 +215,14 @@ export default function ServicesPage() {
                     <TableCell>{service.unit}</TableCell>
                     <TableCell>
                       {service.taxEnabled ? (
-                        <Badge variant="success">نعم</Badge>
+                        <Badge variant="success">Yes</Badge>
                       ) : (
-                        <Badge variant="secondary">لا</Badge>
+                        <Badge variant="secondary">No</Badge>
                       )}
                     </TableCell>
                     <TableCell>
                       <Badge variant={service.isActive ? "success" : "destructive"}>
-                        {service.isActive ? "نشط" : "غير نشط"}
+                        {service.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -235,14 +235,14 @@ export default function ServicesPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEditDialog(service)}>
                             <Pencil className="mr-2 h-4 w-4" />
-                            تعديل
+                            Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDelete(service.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            حذف
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -258,12 +258,12 @@ export default function ServicesPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingId ? "تعديل الخدمة" : "إضافة خدمة جديدة"}</DialogTitle>
+            <DialogTitle>{editingId ? "Edit Service" : "Add New Service"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>الاسم (إنجليزي)</Label>
+                <Label>Name (English)</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -271,7 +271,7 @@ export default function ServicesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>الاسم (عربي)</Label>
+                <Label>Name (Arabic)</Label>
                 <Input
                   value={form.nameAr}
                   onChange={(e) => setForm((prev) => ({ ...prev, nameAr: e.target.value }))}
@@ -279,7 +279,7 @@ export default function ServicesPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>الوصف</Label>
+              <Label>Description</Label>
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
@@ -287,7 +287,7 @@ export default function ServicesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>السعر الافتراضي</Label>
+                <Label>Default Price</Label>
                 <Input
                   type="number"
                   value={form.defaultPrice}
@@ -296,7 +296,7 @@ export default function ServicesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>الوحدة</Label>
+                <Label>Unit</Label>
                 <Input
                   value={form.unit}
                   onChange={(e) => setForm((prev) => ({ ...prev, unit: e.target.value }))}
@@ -308,14 +308,14 @@ export default function ServicesPage() {
                 checked={form.taxEnabled}
                 onCheckedChange={(checked) => setForm((prev) => ({ ...prev, taxEnabled: checked }))}
               />
-              <Label>خاضع للضريبة</Label>
+              <Label>Taxable</Label>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? "جاري الحفظ..." : "حفظ"}
+                {saving ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
           </form>

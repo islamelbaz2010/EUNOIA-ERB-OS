@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { EMPLOYMENT_STATUS_LABELS } from "@/lib/constants";
 
 interface Branch {
   id: string;
@@ -155,16 +156,16 @@ export default function EmployeesPage() {
         }),
       });
       if (res.ok) {
-        toast({ title: "تم إضافة الموظف بنجاح" });
+        toast({ title: "Employee added successfully" });
         setShowAddDialog(false);
         setAddForm({ firstName: "", lastName: "", email: "", phone: "", jobTitle: "", branchId: "" });
         fetchEmployees();
       } else {
         const data = await res.json();
-        toast({ title: "خطأ", description: data.error, variant: "destructive" });
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في إضافة الموظف", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to add employee", variant: "destructive" });
     } finally {
       setAdding(false);
     }
@@ -178,11 +179,11 @@ export default function EmployeesPage() {
         body: JSON.stringify({ employmentStatus: "TERMINATED" }),
       });
       if (res.ok) {
-        toast({ title: "تم تعطيل الموظف بنجاح" });
+        toast({ title: "Employee deactivated successfully" });
         fetchEmployees();
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في تعطيل الموظف", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to deactivate employee", variant: "destructive" });
     }
   }
 
@@ -193,37 +194,31 @@ export default function EmployeesPage() {
       TERMINATED: "destructive",
       SUSPENDED: "destructive",
     };
-    const labels: Record<string, string> = {
-      ACTIVE: "نشط",
-      ON_LEAVE: "في إجازة",
-      TERMINATED: "منتهي",
-      SUSPENDED: "معلق",
-    };
-    return <Badge variant={variants[status] || "default"}>{labels[status] || status}</Badge>;
+    return <Badge variant={variants[status] || "default"}>{EMPLOYMENT_STATUS_LABELS[status] || status}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">الموظفون</h1>
-          <p className="text-muted-foreground">إدارة بيانات الموظفين</p>
+          <h1 className="text-2xl font-bold">Employees</h1>
+          <p className="text-muted-foreground">Manage your employee records</p>
         </div>
         <Button onClick={() => setShowAddDialog(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          إضافة موظف
+          Add Employee
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>قائمة الموظفين</CardTitle>
+            <CardTitle>Employee List</CardTitle>
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="بحث..."
+                  placeholder="Search..."
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
@@ -240,14 +235,14 @@ export default function EmployeesPage() {
                 }}
               >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="الحالة" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="ACTIVE">نشط</SelectItem>
-                  <SelectItem value="ON_LEAVE">في إجازة</SelectItem>
-                  <SelectItem value="TERMINATED">منتهي</SelectItem>
-                  <SelectItem value="SUSPENDED">معلق</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="ON_LEAVE">On Leave</SelectItem>
+                  <SelectItem value="TERMINATED">Terminated</SelectItem>
+                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -257,12 +252,12 @@ export default function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>الكود</TableHead>
-                <TableHead>الاسم</TableHead>
-                <TableHead>القسم</TableHead>
-                <TableHead>الفرع</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
+                <TableHead>Code</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Department</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-left">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -280,7 +275,7 @@ export default function EmployeesPage() {
               ) : employees.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
-                    لا توجد بيانات
+                    No employees found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -293,8 +288,8 @@ export default function EmployeesPage() {
                         <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{emp.department?.nameAr || emp.department?.name || "-"}</TableCell>
-                    <TableCell>{emp.branch?.nameAr || emp.branch?.name || "-"}</TableCell>
+                    <TableCell>{emp.department?.name || emp.department?.nameAr || "-"}</TableCell>
+                    <TableCell>{emp.branch?.name || emp.branch?.nameAr || "-"}</TableCell>
                     <TableCell>{statusBadge(emp.employmentStatus)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -307,13 +302,13 @@ export default function EmployeesPage() {
                           <DropdownMenuItem asChild>
                             <Link href={`/employees/${emp.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
-                              عرض
+                              View
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/employees/${emp.id}?tab=profile`}>
                               <Pencil className="mr-2 h-4 w-4" />
-                              تعديل
+                              Edit
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -321,7 +316,7 @@ export default function EmployeesPage() {
                             className="text-destructive"
                           >
                             <UserX className="mr-2 h-4 w-4" />
-                            تعطيل
+                            Deactivate
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -335,7 +330,7 @@ export default function EmployeesPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                إجمالي: {pagination.total} موظف
+                Total: {pagination.total} employees
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -344,7 +339,7 @@ export default function EmployeesPage() {
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm">
                   {pagination.page} / {pagination.totalPages}
@@ -355,7 +350,7 @@ export default function EmployeesPage() {
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -366,13 +361,13 @@ export default function EmployeesPage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>إضافة موظف جديد</DialogTitle>
-            <DialogDescription>أدخل بيانات الموظف الجديد</DialogDescription>
+            <DialogTitle>Add New Employee</DialogTitle>
+            <DialogDescription>Enter the new employee's information</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddEmployee} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">الاسم الأول</Label>
+                <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
                   value={addForm.firstName}
@@ -381,7 +376,7 @@ export default function EmployeesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">اسم العائلة</Label>
+                <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
                   value={addForm.lastName}
@@ -391,7 +386,7 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -402,7 +397,7 @@ export default function EmployeesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">الهاتف</Label>
+                <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
                   value={addForm.phone}
@@ -411,7 +406,7 @@ export default function EmployeesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobTitle">المسمى الوظيفي</Label>
+                <Label htmlFor="jobTitle">Job Title</Label>
                 <Input
                   id="jobTitle"
                   value={addForm.jobTitle}
@@ -420,27 +415,27 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="branchId">الفرع</Label>
+              <Label htmlFor="branchId">Branch</Label>
               <Select
                 value={addForm.branchId}
                 onValueChange={(value) => setAddForm((prev) => ({ ...prev, branchId: value }))}
               >
                 <SelectTrigger id="branchId">
-                  <SelectValue placeholder="اختر الفرع" />
+                  <SelectValue placeholder="Select branch" />
                 </SelectTrigger>
                 <SelectContent>
                   {branches.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>{b.nameAr || b.name}</SelectItem>
+                    <SelectItem key={b.id} value={b.id}>{b.name || b.nameAr}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
               <Button type="submit" disabled={adding}>
-                {adding ? "جاري الإضافة..." : "إضافة"}
+                {adding ? "Adding..." : "Add"}
               </Button>
             </DialogFooter>
           </form>

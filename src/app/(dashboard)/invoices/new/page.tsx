@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  ArrowRight,
+  ArrowLeft,
   Plus,
   Trash2,
   Loader2,
@@ -128,11 +128,15 @@ export default function NewInvoicePage() {
 
   async function handleSave(status: "DRAFT" | "SENT") {
     if (!clientId) {
-      toast({ title: "خطأ", description: "اختر العميل", variant: "destructive" });
+      toast({ title: "Error", description: "Please select a client", variant: "destructive" });
       return;
     }
     if (items.length === 0 || items.every((i) => !i.description)) {
-      toast({ title: "خطأ", description: "أضف صفاً واحداً على الأقل", variant: "destructive" });
+      toast({ title: "Error", description: "Add at least one line item", variant: "destructive" });
+      return;
+    }
+    if (!dueDate) {
+      toast({ title: "Error", description: "Due date is required", variant: "destructive" });
       return;
     }
 
@@ -152,14 +156,14 @@ export default function NewInvoicePage() {
         }),
       });
       if (res.ok) {
-        toast({ title: status === "DRAFT" ? "تم الحفظ كمسودة" : "تم الإرسال بنجاح" });
+        toast({ title: status === "DRAFT" ? "Saved as draft" : "Sent successfully" });
         router.push("/invoices");
       } else {
         const data = await res.json();
-        toast({ title: "خطأ", description: data.error, variant: "destructive" });
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -169,24 +173,24 @@ export default function NewInvoicePage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.push("/invoices")}>
-          <ArrowRight className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold">إنشاء فاتورة جديدة</h1>
+        <h1 className="text-2xl font-bold">Create New Invoice</h1>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>بيانات الفاتورة</CardTitle>
+              <CardTitle>Invoice Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>العميل *</Label>
+                  <Label>Client *</Label>
                   <Select value={clientId} onValueChange={setClientId}>
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر العميل" />
+                      <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
                     <SelectContent>
                       {clients.map((client) => (
@@ -198,11 +202,12 @@ export default function NewInvoicePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>تاريخ الاستحقاق</Label>
+                  <Label>Due Date *</Label>
                   <Input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -211,17 +216,17 @@ export default function NewInvoicePage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>الأصناف</CardTitle>
+              <CardTitle>Line Items</CardTitle>
               <Button variant="outline" size="sm" onClick={addItem}>
                 <Plus className="mr-2 h-4 w-4" />
-                إضافة صنف
+                Add Item
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="rounded-lg border p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">صنف {index + 1}</span>
+                    <span className="text-sm font-medium">Item {index + 1}</span>
                     {items.length > 1 && (
                       <Button
                         variant="ghost"
@@ -234,13 +239,13 @@ export default function NewInvoicePage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">الخدمة</Label>
+                      <Label className="text-xs">Service</Label>
                       <Select
                         value={item.serviceId}
                         onValueChange={(value) => updateItem(index, "serviceId", value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="اختر خدمة" />
+                          <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
                         <SelectContent>
                           {services.map((service) => (
@@ -252,17 +257,17 @@ export default function NewInvoicePage() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">الوصف</Label>
+                      <Label className="text-xs">Description</Label>
                       <Input
                         value={item.description}
                         onChange={(e) => updateItem(index, "description", e.target.value)}
-                        placeholder="وصف الصنف"
+                        placeholder="Item description"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">الكمية</Label>
+                      <Label className="text-xs">Quantity</Label>
                       <Input
                         type="number"
                         value={item.quantity}
@@ -272,7 +277,7 @@ export default function NewInvoicePage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">سعر الوحدة</Label>
+                      <Label className="text-xs">Unit Price</Label>
                       <Input
                         type="number"
                         value={item.unitPrice}
@@ -292,13 +297,13 @@ export default function NewInvoicePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>ملاحظات</CardTitle>
+              <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="ملاحظات إضافية..."
+                placeholder="Additional notes..."
                 rows={3}
               />
             </CardContent>
@@ -308,16 +313,16 @@ export default function NewInvoicePage() {
         <div className="space-y-6">
           <Card className="sticky top-6">
             <CardHeader>
-              <CardTitle>الملخص المالي</CardTitle>
+              <CardTitle>Financial Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">المجموع الفرعي</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">الخصم</span>
+                  <span className="text-muted-foreground">Discount</span>
                   <span>-{formatCurrency(discountAmount)}</span>
                 </div>
                 <div className="flex gap-2">
@@ -326,8 +331,8 @@ export default function NewInvoicePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fixed">مبلغ ثابت</SelectItem>
-                      <SelectItem value="percentage">نسبة %</SelectItem>
+                      <SelectItem value="fixed">Fixed</SelectItem>
+                      <SelectItem value="percentage">Percent %</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
@@ -343,23 +348,23 @@ export default function NewInvoicePage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Switch checked={vatEnabled} onCheckedChange={setVatEnabled} />
-                  <span className="text-sm">ضريبة القيمة المضافة ({vatRate}%)</span>
+                  <span className="text-sm">VAT ({vatRate}%)</span>
                 </div>
                 <span>{formatCurrency(vatAmount)}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-bold text-lg">
-                <span>الإجمالي</span>
+                <span>Total</span>
                 <span>{formatCurrency(total)}</span>
               </div>
               <div className="space-y-2 pt-4">
                 <Button className="w-full" onClick={() => handleSave("DRAFT")} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  حفظ كمسودة
+                  Save as Draft
                 </Button>
                 <Button className="w-full" variant="outline" onClick={() => handleSave("SENT")} disabled={saving}>
                   <Send className="mr-2 h-4 w-4" />
-                  إرسال الفاتورة
+                  Send Invoice
                 </Button>
               </div>
             </CardContent>

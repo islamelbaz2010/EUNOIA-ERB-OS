@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "مدير النظام",
-  HR: "الموارد البشرية",
-  FINANCE: "المالية",
-  MANAGER: "مدير",
-  EMPLOYEE: "موظف",
-  VIEWER: "مشاهد",
+  ADMIN: "Administrator",
+  HR: "HR",
+  FINANCE: "Finance",
+  MANAGER: "Manager",
+  EMPLOYEE: "Employee",
+  VIEWER: "Viewer",
 };
 
 export default function ProfilePage() {
@@ -50,8 +50,8 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">الملف الشخصي</h1>
-        <p className="text-muted-foreground">بيانات حسابك في النظام</p>
+        <h1 className="text-2xl font-bold">Profile</h1>
+        <p className="text-muted-foreground">Your account information</p>
       </div>
 
       <Card>
@@ -82,32 +82,32 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              الملف الوظيفي المرتبط
+              Linked Employee Record
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">الاسم</p>
+                <p className="text-sm text-muted-foreground">Name</p>
                 <p className="font-medium">{employee.displayName}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">كود الموظف</p>
+                <p className="text-sm text-muted-foreground">Employee Code</p>
                 <p className="font-medium">{employee.employeeCode || "—"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">المسمى الوظيفي</p>
+                <p className="text-sm text-muted-foreground">Job Title</p>
                 <p className="font-medium">{employee.jobTitle || "—"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">الفرع</p>
-                <p className="font-medium">{employee.branch?.nameAr || employee.branch?.name || "—"}</p>
+                <p className="text-sm text-muted-foreground">Branch</p>
+                <p className="font-medium">{employee.branch?.name || employee.branch?.nameAr || "—"}</p>
               </div>
             </div>
             <Button asChild variant="outline">
               <Link href={`/employees/${employee.id}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                عرض الملف الوظيفي الكامل
+                View Full Employee Record
               </Link>
             </Button>
           </CardContent>
@@ -115,7 +115,7 @@ export default function ProfilePage() {
       ) : (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
-            لا يوجد ملف وظيفي مرتبط بهذا الحساب. هذا الحساب مخصص للإدارة فقط.
+            No employee record is linked to this account. This account is for administrative use only.
           </CardContent>
         </Card>
       )}

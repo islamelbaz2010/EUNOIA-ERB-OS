@@ -37,27 +37,27 @@ export function canEditPayrollPeriodFields(periodStatus: string): boolean {
   return periodStatus !== "APPROVED" && periodStatus !== "LOCKED";
 }
 
-// Known backend implementation-detail error strings, mapped to a
-// user-facing Arabic message. The API keeps returning the English string
+// Known backend implementation-detail error strings, mapped to a clear,
+// user-facing English message. The API keeps returning the original string
 // (stable contract for logs/other clients); this mapping is presentation
 // only and never changes what the API sends.
 const PAYROLL_ERROR_MESSAGES: Record<string, string> = {
-  "Period must be in DRAFT status to calculate": "يجب أن تكون فترة الرواتب في حالة مسودة لبدء الحساب",
-  "Payroll period not found": "لم يتم العثور على فترة الرواتب",
-  "Payroll record not found": "لم يتم العثور على سجل الراتب",
+  "Period must be in DRAFT status to calculate": "This payroll period must be in Draft status before it can be calculated",
+  "Payroll period not found": "Payroll period not found",
+  "Payroll record not found": "Payroll record not found",
   "Cannot modify payroll records once the period is under review or later":
-    "لا يمكن تعديل سجلات الرواتب بعد إرسال الفترة للمراجعة",
+    "Payroll records can no longer be edited once the period has been sent for review",
   "Cannot modify payroll period details once approved or locked":
-    "لا يمكن تعديل بيانات فترة الرواتب بعد اعتمادها أو قفلها",
+    "Payroll period details can no longer be edited once it has been approved or locked",
   "Payroll period was modified by another user, please try again":
-    "تم تعديل فترة الرواتب من قبل مستخدم آخر، يرجى إعادة المحاولة",
+    "This payroll period was just updated by another user — please refresh and try again",
 };
 
 export function translatePayrollError(message: string | undefined | null, fallback: string): string {
   if (!message) return fallback;
   if (PAYROLL_ERROR_MESSAGES[message]) return PAYROLL_ERROR_MESSAGES[message];
   if (message.startsWith("Cannot transition from")) {
-    return "لا يمكن تنفيذ هذا الإجراء في الحالة الحالية لفترة الرواتب";
+    return "This action is not available for the payroll period's current status";
   }
   return fallback;
 }

@@ -106,19 +106,19 @@ export default function PayrollPage() {
         body: JSON.stringify({ periodId }),
       });
       if (res.ok) {
-        toast({ title: "تم الحساب بنجاح" });
+        toast({ title: "Calculation completed successfully" });
         fetchPayrollData();
         fetchRecords(periodId);
       } else {
         const errorData = await res.json().catch(() => ({}));
         toast({
-          title: "خطأ",
-          description: translatePayrollError(errorData.error, "فشل في الحساب"),
+          title: "Error",
+          description: translatePayrollError(errorData.error, "Calculation failed"),
           variant: "destructive",
         });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setCalculating(false);
     }
@@ -142,30 +142,30 @@ export default function PayrollPage() {
       } else {
         const errorData = await res.json().catch(() => ({}));
         toast({
-          title: "خطأ",
-          description: translatePayrollError(errorData.error, "تعذر تنفيذ الإجراء"),
+          title: "Error",
+          description: translatePayrollError(errorData.error, "This action could not be completed"),
           variant: "destructive",
         });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
   const handleSendForReview = (periodId: string) =>
-    handleTransition(periodId, "UNDER_REVIEW", "تم إرسال الفترة للمراجعة");
+    handleTransition(periodId, "UNDER_REVIEW", "Period sent for review");
   const handleApprovePeriod = (periodId: string) =>
-    handleTransition(periodId, "APPROVED", "تم اعتماد الفترة");
+    handleTransition(periodId, "APPROVED", "Period approved");
   const handleLockPeriod = (periodId: string) =>
-    handleTransition(periodId, "LOCKED", "تم قفل الفترة نهائياً");
+    handleTransition(periodId, "LOCKED", "Period locked permanently");
 
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "default" | "success" | "warning" | "destructive"; label: string }> = {
-      DRAFT: { variant: "default", label: "مسودة" },
-      CALCULATED: { variant: "warning", label: "محسوب" },
-      UNDER_REVIEW: { variant: "default", label: "قيد المراجعة" },
-      APPROVED: { variant: "success", label: "موافق" },
-      LOCKED: { variant: "destructive", label: "مقفل" },
+      DRAFT: { variant: "default", label: "Draft" },
+      CALCULATED: { variant: "warning", label: "Calculated" },
+      UNDER_REVIEW: { variant: "default", label: "Under Review" },
+      APPROVED: { variant: "success", label: "Approved" },
+      LOCKED: { variant: "destructive", label: "Locked" },
     };
     const item = map[status] || { variant: "default" as const, label: status };
     return <Badge variant={item.variant}>{item.label}</Badge>;
@@ -189,43 +189,43 @@ export default function PayrollPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">الرواتب</h1>
-        <p className="text-muted-foreground">إدارة فترات الرواتب والحسابات</p>
+        <h1 className="text-2xl font-bold">Payroll</h1>
+        <p className="text-muted-foreground">Manage payroll periods and calculations</p>
       </div>
 
       <Tabs defaultValue="periods">
         <TabsList>
           <TabsTrigger value="periods">
             <Wallet className="mr-2 h-4 w-4" />
-            الفترات
+            Periods
           </TabsTrigger>
           <TabsTrigger value="calculate">
             <Calculator className="mr-2 h-4 w-4" />
-            الحساب
+            Calculate
           </TabsTrigger>
           <TabsTrigger value="records">
             <FileText className="mr-2 h-4 w-4" />
-            السجلات
+            Records
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="periods" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>فترات الرواتب</CardTitle>
+              <CardTitle>Payroll Periods</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>من</TableHead>
-                    <TableHead>إلى</TableHead>
-                    <TableHead>الموظفون</TableHead>
-                    <TableHead>الإجمالي</TableHead>
-                    <TableHead>الصافي</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>From</TableHead>
+                    <TableHead>To</TableHead>
+                    <TableHead>Employees</TableHead>
+                    <TableHead>Gross</TableHead>
+                    <TableHead>Net</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-left">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -240,7 +240,7 @@ export default function PayrollPage() {
                   ) : periods.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        لا توجد فترات رواتب
+                        No payroll periods found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -277,7 +277,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleSendForReview(period.id)}
-                                title="إرسال للمراجعة"
+                                title="Send for review"
                               >
                                 <CheckCircle className="h-4 w-4" />
                               </Button>
@@ -287,7 +287,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleApprovePeriod(period.id)}
-                                title="اعتماد"
+                                title="Approve"
                               >
                                 <ShieldCheck className="h-4 w-4" />
                               </Button>
@@ -297,7 +297,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleLockPeriod(period.id)}
-                                title="قفل نهائي"
+                                title="Lock permanently"
                               >
                                 <Lock className="h-4 w-4" />
                               </Button>
@@ -316,19 +316,19 @@ export default function PayrollPage() {
         <TabsContent value="calculate" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>حساب الرواتب</CardTitle>
+              <CardTitle>Calculate Payroll</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {draftPeriods.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  لا توجد فترات رواتب في حالة مسودة قابلة للحساب. الفترات التي تم حسابها بالفعل يمكن متابعتها من تبويب "الفترات" أو "السجلات".
+                  There are no Draft payroll periods ready to calculate. Periods that have already been calculated can be tracked from the "Periods" or "Records" tab.
                 </p>
               ) : (
                 <>
                   <div className="flex items-center gap-4">
                     <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                       <SelectTrigger className="w-64">
-                        <SelectValue placeholder="اختر الفترة" />
+                        <SelectValue placeholder="Select period" />
                       </SelectTrigger>
                       <SelectContent>
                         {draftPeriods.map((period) => (
@@ -343,17 +343,17 @@ export default function PayrollPage() {
                       disabled={!selectedPeriod || calculating || !draftPeriods.some((p) => p.id === selectedPeriod)}
                     >
                       {calculating ? (
-                        "جاري الحساب..."
+                        "Calculating..."
                       ) : (
                         <>
                           <Play className="mr-2 h-4 w-4" />
-                          بدء الحساب
+                          Start Calculation
                         </>
                       )}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    سيتم حساب رواتب جميع الموظفين النشطين في الفترة المحددة
+                    This will calculate payroll for all active employees in the selected period
                   </p>
                 </>
               )}
@@ -365,7 +365,7 @@ export default function PayrollPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>سجلات الرواتب</CardTitle>
+                <CardTitle>Payroll Records</CardTitle>
                 {selectedPeriod && (
                   <Badge variant="secondary">
                     {periods.find((p) => p.id === selectedPeriod)?.name}
@@ -376,26 +376,26 @@ export default function PayrollPage() {
             <CardContent>
               {!selectedPeriod ? (
                 <p className="text-center text-muted-foreground py-8">
-                  اختر فترة لعرض السجلات
+                  Select a period to view its records
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الموظف</TableHead>
-                      <TableHead>الراتب الأساسي</TableHead>
-                      <TableHead>الإضافات</TableHead>
-                      <TableHead>الخصومات</TableHead>
-                      <TableHead>الإجمالي</TableHead>
-                      <TableHead>الصافي</TableHead>
-                      <TableHead>الحالة</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Base Salary</TableHead>
+                      <TableHead>Additions</TableHead>
+                      <TableHead>Deductions</TableHead>
+                      <TableHead>Gross</TableHead>
+                      <TableHead>Net</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {records.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8">
-                          لا توجد سجلات
+                          No records found
                         </TableCell>
                       </TableRow>
                     ) : (

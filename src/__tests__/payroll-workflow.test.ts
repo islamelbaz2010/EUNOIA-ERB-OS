@@ -90,60 +90,56 @@ describe("payroll-workflow", () => {
   });
 
   describe("translatePayrollError", () => {
-    // D) The displayed message is Arabic and never the raw English
-    // implementation string, for every case the backend can return.
-    it("translates the DRAFT-required calculation error to Arabic", () => {
+    // D) The displayed message is a clear English sentence and never the
+    // raw internal implementation string, for every case the backend can
+    // return.
+    it("translates the DRAFT-required calculation error to a clear message", () => {
       const result = translatePayrollError("Period must be in DRAFT status to calculate", "fallback");
-      expect(result).toBe("يجب أن تكون فترة الرواتب في حالة مسودة لبدء الحساب");
-      expect(result).not.toMatch(/[A-Za-z]/);
+      expect(result).toBe("This payroll period must be in Draft status before it can be calculated");
     });
 
-    it("translates an invalid-transition error to a generic Arabic message", () => {
+    it("translates an invalid-transition error to a generic clear message", () => {
       const result = translatePayrollError("Cannot transition from CALCULATED to APPROVED", "fallback");
-      expect(result).toBe("لا يمكن تنفيذ هذا الإجراء في الحالة الحالية لفترة الرواتب");
-      expect(result).not.toMatch(/[A-Za-z]/);
+      expect(result).toBe("This action is not available for the payroll period's current status");
     });
 
-    it("translates the not-found error to Arabic", () => {
+    it("translates the not-found error to a clear message", () => {
       expect(translatePayrollError("Payroll period not found", "fallback")).toBe(
-        "لم يتم العثور على فترة الرواتب"
+        "Payroll period not found"
       );
     });
 
-    it("translates the record-edit-blocked error to Arabic", () => {
+    it("translates the record-edit-blocked error to a clear message", () => {
       const result = translatePayrollError(
         "Cannot modify payroll records once the period is under review or later",
         "fallback"
       );
-      expect(result).toBe("لا يمكن تعديل سجلات الرواتب بعد إرسال الفترة للمراجعة");
-      expect(result).not.toMatch(/[A-Za-z]/);
+      expect(result).toBe("Payroll records can no longer be edited once the period has been sent for review");
     });
 
-    it("translates the period-fields-blocked error to Arabic", () => {
+    it("translates the period-fields-blocked error to a clear message", () => {
       const result = translatePayrollError(
         "Cannot modify payroll period details once approved or locked",
         "fallback"
       );
-      expect(result).toBe("لا يمكن تعديل بيانات فترة الرواتب بعد اعتمادها أو قفلها");
-      expect(result).not.toMatch(/[A-Za-z]/);
+      expect(result).toBe("Payroll period details can no longer be edited once it has been approved or locked");
     });
 
-    it("translates the concurrent-modification conflict error to Arabic", () => {
+    it("translates the concurrent-modification conflict error to a clear message", () => {
       const result = translatePayrollError(
         "Payroll period was modified by another user, please try again",
         "fallback"
       );
-      expect(result).toBe("تم تعديل فترة الرواتب من قبل مستخدم آخر، يرجى إعادة المحاولة");
-      expect(result).not.toMatch(/[A-Za-z]/);
+      expect(result).toBe("This payroll period was just updated by another user — please refresh and try again");
     });
 
-    it("falls back to the given Arabic default for an unrecognized message", () => {
-      expect(translatePayrollError("Internal server error", "فشل في الحساب")).toBe("فشل في الحساب");
+    it("falls back to the given default for an unrecognized message", () => {
+      expect(translatePayrollError("Internal server error", "Calculation failed")).toBe("Calculation failed");
     });
 
-    it("falls back to the given Arabic default when no message is present", () => {
-      expect(translatePayrollError(undefined, "فشل في الحساب")).toBe("فشل في الحساب");
-      expect(translatePayrollError(null, "فشل في الحساب")).toBe("فشل في الحساب");
+    it("falls back to the given default when no message is present", () => {
+      expect(translatePayrollError(undefined, "Calculation failed")).toBe("Calculation failed");
+      expect(translatePayrollError(null, "Calculation failed")).toBe("Calculation failed");
     });
   });
 });

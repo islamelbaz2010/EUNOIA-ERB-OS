@@ -83,7 +83,6 @@ function isCurrencyField(key: string, reportId?: string | null): boolean {
 interface ReportCard {
   id: string;
   title: string;
-  titleAr: string;
   description: string;
   icon: React.ElementType;
   color: string;
@@ -94,8 +93,7 @@ const reportCards: ReportCard[] = [
   {
     id: "attendance",
     title: "Attendance Report",
-    titleAr: "تقرير الحضور والانصراف",
-    description: "تقرير شامل عن حضور وانصراف الموظفين",
+    description: "A comprehensive report on employee attendance",
     icon: Clock,
     color: "text-primary",
     bgColor: "bg-primary/10",
@@ -103,8 +101,7 @@ const reportCards: ReportCard[] = [
   {
     id: "payroll",
     title: "Payroll Report",
-    titleAr: "تقرير الرواتب",
-    description: "تقرير تفصيلي عن رواتب الموظفين",
+    description: "A detailed report on employee payroll",
     icon: Wallet,
     color: "text-success",
     bgColor: "bg-success/10",
@@ -112,8 +109,7 @@ const reportCards: ReportCard[] = [
   {
     id: "invoices",
     title: "Invoice Report",
-    titleAr: "تقرير الفواتير",
-    description: "تقرير عن الفواتير الصادرة",
+    description: "A report on invoices issued",
     icon: Receipt,
     color: "text-warning",
     bgColor: "bg-warning/10",
@@ -121,8 +117,7 @@ const reportCards: ReportCard[] = [
   {
     id: "payment",
     title: "Payment Report",
-    titleAr: "تقرير المدفوعات",
-    description: "تقرير عن المدفوعات المستلمة",
+    description: "A report on payments received",
     icon: CreditCard,
     color: "text-destructive",
     bgColor: "bg-destructive/10",
@@ -130,8 +125,7 @@ const reportCards: ReportCard[] = [
   {
     id: "revenue",
     title: "Revenue Report",
-    titleAr: "تقرير الإيرادات",
-    description: "تقرير عن إيرادات الشركة",
+    description: "A report on company revenue",
     icon: TrendingUp,
     color: "text-primary",
     bgColor: "bg-primary/10",
@@ -139,64 +133,64 @@ const reportCards: ReportCard[] = [
 ];
 
 const reportItemLabels: Record<string, string> = {
-  id: "المعرف",
-  employeeId: "الموظف",
-  employeeCode: "كود الموظف",
-  displayName: "الاسم",
-  firstName: "الاسم الأول",
-  lastName: "اسم العائلة",
-  baseSalary: "الراتب الأساسي",
-  totalAdditions: "الإضافات",
-  totalDeductions: "الخصومات",
-  overtime: "العمل الإضافي",
-  overtimeMinutes: "العمل الإضافي (دقيقة)",
-  gross: "الإجمالي",
-  net: "الصافي",
-  status: "الحالة",
-  period: "الفترة",
-  invoiceNumber: "رقم الفاتورة",
-  clientName: "العميل",
-  total: "الإجمالي",
-  paid: "المدفوع",
-  outstanding: "المتبقي",
-  amount: "المبلغ",
-  paymentDate: "التاريخ",
-  method: "الطريقة",
-  reference: "المرجع",
-  date: "التاريخ",
-  dueDate: "تاريخ الاستحقاق",
-  workMinutes: "ساعات العمل",
-  workHours: "ساعات العمل",
-  lateMinutes: "التأخير (دقيقة)",
-  presentDays: "أيام الحضور",
-  absentDays: "أيام الغياب",
-  leaveDays: "أيام الإجازة",
+  id: "ID",
+  employeeId: "Employee",
+  employeeCode: "Employee Code",
+  displayName: "Name",
+  firstName: "First Name",
+  lastName: "Last Name",
+  baseSalary: "Base Salary",
+  totalAdditions: "Additions",
+  totalDeductions: "Deductions",
+  overtime: "Overtime",
+  overtimeMinutes: "Overtime (min)",
+  gross: "Gross",
+  net: "Net",
+  status: "Status",
+  period: "Period",
+  invoiceNumber: "Invoice #",
+  clientName: "Client",
+  total: "Total",
+  paid: "Paid",
+  outstanding: "Outstanding",
+  amount: "Amount",
+  paymentDate: "Date",
+  method: "Method",
+  reference: "Reference",
+  date: "Date",
+  dueDate: "Due Date",
+  workMinutes: "Hours Worked",
+  workHours: "Hours Worked",
+  lateMinutes: "Late (min)",
+  presentDays: "Present Days",
+  absentDays: "Absent Days",
+  leaveDays: "Leave Days",
 };
 
 const summaryLabels: Record<string, string> = {
-  totalEmployees: "إجمالي الموظفين",
-  totalPresent: "الحضور",
-  totalAbsent: "الغياب",
-  totalLate: "المتأخرون",
-  totalOvertime: "العمل الإضافي",
-  averageAttendance: "متوسط الحضور",
-  totalInvoices: "إجمالي الفواتير",
-  totalSubtotal: "المجموع الفرعي",
-  totalDiscount: "الخصم",
-  totalVat: "الضريبة",
-  totalAmount: "الإجمالي",
-  totalPaid: "المدفوع",
-  totalBaseSalary: "إجمالي الرواتب الأساسية",
-  totalGross: "إجمالي الرواتب",
-  totalNet: "صافي الرواتب",
-  totalDeductions: "إجمالي الخصومات",
-  totalLateMinutes: "إجمالي تأخر (دقيقة)",
-  totalOvertimeMinutes: "إجمالي العمل الإضافي (دقيقة)",
-  byStatus: "حسب الحالة",
-  totalPayments: "إجمالي المدفوعات",
-  byMethod: "حسب طريقة الدفع",
-  totalRevenue: "إجمالي الإيرادات",
-  totalOutstanding: "المتبقي",
+  totalEmployees: "Total Employees",
+  totalPresent: "Present",
+  totalAbsent: "Absent",
+  totalLate: "Late",
+  totalOvertime: "Overtime",
+  averageAttendance: "Average Attendance",
+  totalInvoices: "Total Invoices",
+  totalSubtotal: "Subtotal",
+  totalDiscount: "Discount",
+  totalVat: "VAT",
+  totalAmount: "Total",
+  totalPaid: "Paid",
+  totalBaseSalary: "Total Base Salary",
+  totalGross: "Total Gross Salary",
+  totalNet: "Total Net Salary",
+  totalDeductions: "Total Deductions",
+  totalLateMinutes: "Total Late (min)",
+  totalOvertimeMinutes: "Total Overtime (min)",
+  byStatus: "By Status",
+  totalPayments: "Total Payments",
+  byMethod: "By Payment Method",
+  totalRevenue: "Total Revenue",
+  totalOutstanding: "Outstanding",
 };
 
 export default function ReportsPage() {
@@ -230,8 +224,8 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">التقارير</h1>
-        <p className="text-muted-foreground">عرض وتحميل التقارير المختلفة</p>
+        <h1 className="text-2xl font-bold">Reports</h1>
+        <p className="text-muted-foreground">View and export the available reports</p>
       </div>
 
       {!selectedReport ? (
@@ -250,7 +244,7 @@ export default function ReportsPage() {
                       <Icon className={`h-6 w-6 ${report.color}`} />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{report.titleAr}</h3>
+                      <h3 className="font-semibold">{report.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
                         {report.description}
                       </p>
@@ -269,7 +263,7 @@ export default function ReportsPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <h2 className="text-xl font-bold">
-                {reportCards.find((r) => r.id === selectedReport)?.titleAr}
+                {reportCards.find((r) => r.id === selectedReport)?.title}
               </h2>
             </div>
             <div className="flex items-center gap-2">
@@ -286,7 +280,7 @@ export default function ReportsPage() {
                 className="w-40"
               />
               <Button onClick={() => fetchReport(selectedReport)}>
-                تحديث
+                Refresh
               </Button>
             </div>
           </div>
@@ -321,7 +315,7 @@ export default function ReportsPage() {
                             : typeof value === "object" && value !== null
                               ? Object.entries(value as Record<string, number>)
                                   .map(([k, v]) => `${k}: ${key === "byMethod" ? formatCurrency(v) : formatNumber(v)}`)
-                                  .join("، ")
+                                  .join(", ")
                               : safeRenderValue(value)}
                         </p>
                       </CardContent>
@@ -360,11 +354,11 @@ export default function ReportsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <p className="text-center text-muted-foreground py-8">لا توجد بيانات</p>
+                <p className="text-center text-muted-foreground py-8">No data available</p>
               )}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">لا توجد بيانات</p>
+            <p className="text-center text-muted-foreground py-8">No data available</p>
           )}
         </div>
       )}

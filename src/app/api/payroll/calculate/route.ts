@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { formatZodError } from "@/lib/validation";
 import { requireRole } from "@/lib/authorization";
 import { calculatePeriodPayroll } from "@/lib/payroll-engine";
 import { canCalculatePayrollPeriod } from "@/lib/payroll-workflow";
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 });
+      return NextResponse.json({ error: formatZodError(error), details: error.issues }, { status: 400 });
     }
     console.error("POST /api/payroll/calculate error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

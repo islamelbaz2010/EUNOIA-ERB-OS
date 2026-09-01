@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { formatZodError } from "@/lib/validation";
 import { requireRole } from "@/lib/authorization";
 
 const createClientSchema = z.object({
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
     const [clients, total] = await Promise.all([
       db.client.findMany({
         where,
+        include: { _count: { select: { invoices: true } } },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: "desc" },
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(client, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation error", details: error.issues }, { status: 400 });
+      return NextResponse.json({ error: formatZodError(error), details: error.issues }, { status: 400 });
     }
     console.error("POST /api/clients error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

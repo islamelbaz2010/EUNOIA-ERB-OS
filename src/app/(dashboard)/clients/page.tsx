@@ -133,16 +133,16 @@ export default function ClientsPage() {
         body: JSON.stringify(addForm),
       });
       if (res.ok) {
-        toast({ title: "تم إضافة العميل بنجاح" });
+        toast({ title: "Client added successfully" });
         setShowAddDialog(false);
         setAddForm({ name: "", nameAr: "", contactPerson: "", phone: "", email: "", address: "", city: "", country: DEFAULT_COUNTRY, governorate: "", taxNumber: "" });
         fetchClients();
       } else {
         const data = await res.json();
-        toast({ title: "خطأ", description: data.error, variant: "destructive" });
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     } finally {
       setAdding(false);
     }
@@ -152,23 +152,23 @@ export default function ClientsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">العملاء</h1>
-          <p className="text-muted-foreground">إدارة بيانات العملاء</p>
+          <h1 className="text-2xl font-bold">Clients</h1>
+          <p className="text-muted-foreground">Manage your client records</p>
         </div>
         <Button onClick={() => setShowAddDialog(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          إضافة عميل
+          Add Client
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>قائمة العملاء</CardTitle>
+            <CardTitle>Client List</CardTitle>
             <div className="relative">
               <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="بحث..."
+                placeholder="Search..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -183,13 +183,13 @@ export default function ClientsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>الاسم</TableHead>
-                <TableHead>جهة الاتصال</TableHead>
-                <TableHead>الهاتف</TableHead>
-                <TableHead>المدينة</TableHead>
-                <TableHead>الفواتير</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Contact Person</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Invoices</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-left">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -204,7 +204,7 @@ export default function ClientsPage() {
               ) : clients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
-                    لا توجد بيانات
+                    No clients found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -224,7 +224,7 @@ export default function ClientsPage() {
                     <TableCell>{client._count?.invoices || 0}</TableCell>
                     <TableCell>
                       <Badge variant={client.status === "ACTIVE" ? "success" : "default"}>
-                        {client.status === "ACTIVE" ? "نشط" : client.status === "BLOCKED" ? "محظور" : "غير نشط"}
+                        {client.status === "ACTIVE" ? "Active" : client.status === "BLOCKED" ? "Blocked" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -238,13 +238,13 @@ export default function ClientsPage() {
                           <DropdownMenuItem asChild>
                             <Link href={`/clients/${client.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
-                              عرض
+                              View
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/clients/${client.id}?tab=info`}>
                               <Pencil className="mr-2 h-4 w-4" />
-                              تعديل
+                              Edit
                             </Link>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -259,7 +259,7 @@ export default function ClientsPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                إجمالي: {pagination.total} عميل
+                Total: {pagination.total} clients
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -268,7 +268,7 @@ export default function ClientsPage() {
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm">
                   {pagination.page} / {pagination.totalPages}
@@ -279,7 +279,7 @@ export default function ClientsPage() {
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -290,13 +290,13 @@ export default function ClientsPage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>إضافة عميل جديد</DialogTitle>
-            <DialogDescription>أدخل بيانات العميل</DialogDescription>
+            <DialogTitle>Add New Client</DialogTitle>
+            <DialogDescription>Enter the client's information</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddClient} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>الاسم (إنجليزي)</Label>
+                <Label>Name (English)</Label>
                 <Input
                   value={addForm.name}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -304,7 +304,7 @@ export default function ClientsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>الاسم (عربي)</Label>
+                <Label>Name (Arabic)</Label>
                 <Input
                   value={addForm.nameAr}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, nameAr: e.target.value }))}
@@ -313,14 +313,14 @@ export default function ClientsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>جهة الاتصال</Label>
+                <Label>Contact Person</Label>
                 <Input
                   value={addForm.contactPerson}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>الهاتف</Label>
+                <Label>Phone</Label>
                 <Input
                   value={addForm.phone}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -329,7 +329,7 @@ export default function ClientsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>البريد الإلكتروني</Label>
+              <Label>Email</Label>
               <Input
                 type="email"
                 value={addForm.email}
@@ -339,13 +339,13 @@ export default function ClientsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>المحافظة</Label>
+                <Label>Governorate</Label>
                 <Select
                   value={addForm.governorate}
                   onValueChange={(value) => setAddForm((prev) => ({ ...prev, governorate: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="اختر المحافظة" />
+                    <SelectValue placeholder="Select governorate" />
                   </SelectTrigger>
                   <SelectContent>
                     {EGYPT_GOVERNORATES.map((g) => (
@@ -355,7 +355,7 @@ export default function ClientsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>المدينة</Label>
+                <Label>City</Label>
                 <Input
                   value={addForm.city}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, city: e.target.value }))}
@@ -363,7 +363,7 @@ export default function ClientsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>الرقم الضريبي</Label>
+              <Label>Tax Number</Label>
               <Input
                 value={addForm.taxNumber}
                 onChange={(e) => setAddForm((prev) => ({ ...prev, taxNumber: e.target.value }))}
@@ -371,7 +371,7 @@ export default function ClientsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>العنوان</Label>
+              <Label>Address</Label>
               <Input
                 value={addForm.address}
                 onChange={(e) => setAddForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -379,10 +379,10 @@ export default function ClientsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                إلغاء
+                Cancel
               </Button>
               <Button type="submit" disabled={adding}>
-                {adding ? "جاري الإضافة..." : "إضافة"}
+                {adding ? "Adding..." : "Add"}
               </Button>
             </DialogFooter>
           </form>

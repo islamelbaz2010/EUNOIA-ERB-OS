@@ -35,10 +35,10 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+        setError("Incorrect email or password");
         toast({
-          title: "خطأ في تسجيل الدخول",
-          description: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+          title: "Sign-in failed",
+          description: "Incorrect email or password",
           variant: "destructive",
         });
       } else {
@@ -46,7 +46,7 @@ function LoginForm() {
         router.refresh();
       }
     } catch (err) {
-      setError("حدث خطأ أثناء تسجيل الدخول");
+      setError("An error occurred while signing in");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +62,7 @@ function LoginForm() {
         </div>
         <CardTitle className="text-2xl font-bold">EUNOIA ERB OS</CardTitle>
         <CardDescription>
-          نظام إدارة الموارد البشرية
+          Business Operating System
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,7 +74,7 @@ function LoginForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -88,7 +88,7 @@ function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">كلمة المرور</Label>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -120,10 +120,10 @@ function LoginForm() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                جاري تسجيل الدخول...
+                Signing in...
               </>
             ) : (
-              "تسجيل الدخول"
+              "Sign In"
             )}
           </Button>
         </form>

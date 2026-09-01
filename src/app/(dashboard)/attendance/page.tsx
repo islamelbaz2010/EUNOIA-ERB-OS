@@ -133,13 +133,13 @@ export default function AttendancePage() {
       });
       if (res.ok) {
         const data = await res.json();
-        toast({ title: "تم رفع الملف بنجاح", description: `${data.validRows} سجل صحيح من أصل ${data.totalRows}` });
+        toast({ title: "File uploaded successfully", description: `${data.validRows} valid rows out of ${data.totalRows}` });
         fetchAttendanceData();
       } else {
-        toast({ title: "خطأ", description: "فشل في رفع الملف", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to upload file", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في رفع الملف", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to upload file", variant: "destructive" });
     }
   }
 
@@ -152,13 +152,21 @@ export default function AttendancePage() {
       });
       if (res.ok) {
         const data = await res.json();
-        toast({ title: "تم المطابقة بنجاح", description: `${data.matched} مطابق، ${data.unmatched} غير مطابق` });
+        if (data.matched > 0) {
+          toast({ title: "Matching completed", description: `${data.matched} matched, ${data.unmatched} unmatched` });
+        } else {
+          toast({
+            title: "No records matched",
+            description: `0 of ${data.totalProcessed} rows matched. Check that employees have a fingerprint ID, code, or name matching the import file.`,
+            variant: "destructive",
+          });
+        }
         fetchAttendanceData();
       } else {
-        toast({ title: "خطأ", description: "فشل في المطابقة", variant: "destructive" });
+        toast({ title: "Error", description: "Matching failed", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", description: "فشل في المطابقة", variant: "destructive" });
+      toast({ title: "Error", description: "Matching failed", variant: "destructive" });
     }
   }
 
@@ -170,21 +178,21 @@ export default function AttendancePage() {
         body: JSON.stringify({ status: action }),
       });
       if (res.ok) {
-        toast({ title: action === "APPROVED" ? "تم الموافقة" : "تم الرفض" });
+        toast({ title: action === "APPROVED" ? "Approved" : "Rejected" });
         fetchAttendanceData();
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "Error", variant: "destructive" });
     }
   }
 
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "success" | "destructive" | "warning" | "default"; label: string }> = {
-      PRESENT: { variant: "success", label: "حضور" },
-      ABSENT: { variant: "destructive", label: "غياب" },
-      LATE: { variant: "warning", label: "تأخر" },
-      LEAVE: { variant: "default", label: "إجازة" },
-      HOLIDAY: { variant: "default", label: "عطلة" },
+      PRESENT: { variant: "success", label: "Present" },
+      ABSENT: { variant: "destructive", label: "Absent" },
+      LATE: { variant: "warning", label: "Late" },
+      LEAVE: { variant: "default", label: "Leave" },
+      HOLIDAY: { variant: "default", label: "Holiday" },
     };
     const item = map[status] || { variant: "default" as const, label: status };
     return <Badge variant={item.variant}>{item.label}</Badge>;
@@ -193,23 +201,23 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">الحضور والانصراف</h1>
-        <p className="text-muted-foreground">إدارة سجلات الحضور والاستثناءات</p>
+        <h1 className="text-2xl font-bold">Attendance</h1>
+        <p className="text-muted-foreground">Manage attendance records and exceptions</p>
       </div>
 
       <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="records">
             <Clock className="mr-2 h-4 w-4" />
-            السجلات
+            Records
           </TabsTrigger>
           <TabsTrigger value="import">
             <Upload className="mr-2 h-4 w-4" />
-            الاستيراد
+            Import
           </TabsTrigger>
           <TabsTrigger value="exceptions">
             <AlertTriangle className="mr-2 h-4 w-4" />
-            الاستثناءات
+            Exceptions
           </TabsTrigger>
         </TabsList>
 
@@ -217,7 +225,7 @@ export default function AttendancePage() {
           <Card>
             <CardHeader>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle>سجلات الحضور</CardTitle>
+                <CardTitle>Attendance Records</CardTitle>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     type="date"
@@ -233,14 +241,14 @@ export default function AttendancePage() {
                   />
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-36">
-                      <SelectValue placeholder="الحالة" />
+                      <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">الكل</SelectItem>
-                      <SelectItem value="PRESENT">حضور</SelectItem>
-                      <SelectItem value="ABSENT">غياب</SelectItem>
-                      <SelectItem value="LATE">تأخر</SelectItem>
-                      <SelectItem value="LEAVE">إجازة</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="PRESENT">Present</SelectItem>
+                      <SelectItem value="ABSENT">Absent</SelectItem>
+                      <SelectItem value="LATE">Late</SelectItem>
+                      <SelectItem value="LEAVE">Leave</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -250,13 +258,13 @@ export default function AttendancePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الموظف</TableHead>
-                    <TableHead>التاريخ</TableHead>
-                    <TableHead>الدخول</TableHead>
-                    <TableHead>الخروج</TableHead>
-                    <TableHead>ساعات العمل</TableHead>
-                    <TableHead>التأخير</TableHead>
-                    <TableHead>الحالة</TableHead>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Time In</TableHead>
+                    <TableHead>Time Out</TableHead>
+                    <TableHead>Hours Worked</TableHead>
+                    <TableHead>Late</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -271,7 +279,7 @@ export default function AttendancePage() {
                   ) : records.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
-                        لا توجد سجلات
+                        No attendance records found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -284,10 +292,10 @@ export default function AttendancePage() {
                           </div>
                         </TableCell>
                         <TableCell>{formatDate(record.date)}</TableCell>
-                        <TableCell>{record.firstIn ? new Date(record.firstIn).toLocaleTimeString("ar-EG") : "-"}</TableCell>
-                        <TableCell>{record.lastOut ? new Date(record.lastOut).toLocaleTimeString("ar-EG") : "-"}</TableCell>
+                        <TableCell>{record.firstIn ? new Date(record.firstIn).toLocaleTimeString("en-US") : "-"}</TableCell>
+                        <TableCell>{record.lastOut ? new Date(record.lastOut).toLocaleTimeString("en-US") : "-"}</TableCell>
                         <TableCell>{Math.round(record.workMinutes / 60 * 10) / 10}h</TableCell>
-                        <TableCell>{record.lateMinutes > 0 ? `${record.lateMinutes} دقيقة` : "-"}</TableCell>
+                        <TableCell>{record.lateMinutes > 0 ? `${record.lateMinutes} min` : "-"}</TableCell>
                         <TableCell>{statusBadge(record.status)}</TableCell>
                       </TableRow>
                     ))
@@ -301,13 +309,13 @@ export default function AttendancePage() {
         <TabsContent value="import" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>استيراد بيانات الحضور</CardTitle>
+              <CardTitle>Import Attendance Data</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="rounded-lg border-2 border-dashed p-8 text-center">
                 <Upload className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  اسحب ملف Excel هنا أو انقر للاختيار
+                  Drag an Excel file here or click to browse
                 </p>
                 <input
                   type="file"
@@ -319,30 +327,30 @@ export default function AttendancePage() {
                 <Button asChild>
                   <label htmlFor="file-upload" className="cursor-pointer">
                     <Upload className="mr-2 h-4 w-4" />
-                    اختيار ملف
+                    Choose File
                   </label>
                 </Button>
               </div>
 
               <div>
-                <h3 className="font-medium mb-3">سجل الاستيراد</h3>
+                <h3 className="font-medium mb-3">Import History</h3>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>الملف</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>إجمالي الصفوف</TableHead>
-                      <TableHead>صحيحة</TableHead>
-                      <TableHead>خاطئة</TableHead>
-                      <TableHead>التاريخ</TableHead>
-                      <TableHead className="text-left">الإجراءات</TableHead>
+                      <TableHead>File</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Total Rows</TableHead>
+                      <TableHead>Valid</TableHead>
+                      <TableHead>Invalid</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-left">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {imports.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-4">
-                          لا توجد سجلات استيراد
+                          No import records found
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -365,7 +373,7 @@ export default function AttendancePage() {
                                 variant="outline"
                                 onClick={() => handleMatch(imp.id)}
                               >
-                                مطابقة
+                                Match
                               </Button>
                             )}
                           </TableCell>
@@ -383,16 +391,16 @@ export default function AttendancePage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>الاستثناءات</CardTitle>
+                <CardTitle>Exceptions</CardTitle>
                 <Select value={exceptionStatus} onValueChange={setExceptionStatus}>
                   <SelectTrigger className="w-36">
-                    <SelectValue placeholder="الحالة" />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">الكل</SelectItem>
-                    <SelectItem value="PENDING">معلق</SelectItem>
-                    <SelectItem value="APPROVED">موافق</SelectItem>
-                    <SelectItem value="REJECTED">مرفوض</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="APPROVED">Approved</SelectItem>
+                    <SelectItem value="REJECTED">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -401,19 +409,19 @@ export default function AttendancePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الموظف</TableHead>
-                    <TableHead>التاريخ</TableHead>
-                    <TableHead>النوع</TableHead>
-                    <TableHead>السبب</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead className="text-left">الإجراءات</TableHead>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-left">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {exceptions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        لا توجد استثناءات
+                        No exceptions found
                       </TableCell>
                     </TableRow>
                   ) : (

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { INVOICE_STATUS_LABELS } from "@/lib/constants";
 
 interface Invoice {
   id: string;
@@ -105,29 +106,20 @@ export default function InvoicesPage() {
       OVERDUE: "destructive",
       CANCELLED: "destructive",
     };
-    const labels: Record<string, string> = {
-      DRAFT: "مسودة",
-      SENT: "مرسلة",
-      VIEWED: "تمت المشاهدة",
-      PARTIALLY_PAID: "مدفوعة جزئياً",
-      PAID: "مدفوعة",
-      OVERDUE: "متأخرة",
-      CANCELLED: "ملغاة",
-    };
-    return <Badge variant={map[status] || "default"}>{labels[status] || status}</Badge>;
+    return <Badge variant={map[status] || "default"}>{INVOICE_STATUS_LABELS[status] || status}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">الفواتير</h1>
-          <p className="text-muted-foreground">إدارة الفواتير والمدفوعات</p>
+          <h1 className="text-2xl font-bold">Invoices</h1>
+          <p className="text-muted-foreground">Manage invoices and payments</p>
         </div>
         <Button asChild>
           <Link href="/invoices/new">
             <Plus className="mr-2 h-4 w-4" />
-            إنشاء فاتورة
+            Create Invoice
           </Link>
         </Button>
       </div>
@@ -135,12 +127,12 @@ export default function InvoicesPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>قائمة الفواتير</CardTitle>
+            <CardTitle>Invoice List</CardTitle>
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="بحث..."
+                  placeholder="Search..."
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
@@ -157,16 +149,16 @@ export default function InvoicesPage() {
                 }}
               >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="الحالة" />
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="OUTSTANDING">معلقة</SelectItem>
-                  <SelectItem value="DRAFT">مسودة</SelectItem>
-                  <SelectItem value="SENT">مرسلة</SelectItem>
-                  <SelectItem value="PAID">مدفوعة</SelectItem>
-                  <SelectItem value="PARTIALLY_PAID">مدفوعة جزئياً</SelectItem>
-                  <SelectItem value="OVERDUE">متأخرة</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="OUTSTANDING">Outstanding</SelectItem>
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="SENT">Sent</SelectItem>
+                  <SelectItem value="PAID">Paid</SelectItem>
+                  <SelectItem value="PARTIALLY_PAID">Partially Paid</SelectItem>
+                  <SelectItem value="OVERDUE">Overdue</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -176,14 +168,14 @@ export default function InvoicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>رقم الفاتورة</TableHead>
-                <TableHead>العميل</TableHead>
-                <TableHead>التاريخ</TableHead>
-                <TableHead>الاستحقاق</TableHead>
-                <TableHead>المبلغ</TableHead>
-                <TableHead>المدفوع</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead className="text-left">الإجراءات</TableHead>
+                <TableHead>Invoice #</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Paid</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-left">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -198,7 +190,7 @@ export default function InvoicesPage() {
               ) : invoices.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8">
-                    لا توجد فواتير
+                    No invoices found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -230,7 +222,7 @@ export default function InvoicesPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                إجمالي: {pagination.total} فاتورة
+                Total: {pagination.total} invoices
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -239,7 +231,7 @@ export default function InvoicesPage() {
                   disabled={pagination.page <= 1}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-sm">
                   {pagination.page} / {pagination.totalPages}
@@ -250,7 +242,7 @@ export default function InvoicesPage() {
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
