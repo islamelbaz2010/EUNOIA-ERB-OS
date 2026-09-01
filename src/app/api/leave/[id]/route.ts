@@ -80,8 +80,8 @@ export async function PUT(
             data: {
               employeeId: leaveRequest.employeeId,
               date,
-              scheduledStart: "08:00",
-              scheduledEnd: "17:00",
+              scheduledStart: "10:30",
+              scheduledEnd: "18:30",
               status: "LEAVE",
             },
           });

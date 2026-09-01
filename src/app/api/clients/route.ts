@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const createClientSchema = z.object({
   name: z.string().min(1),
@@ -67,10 +68,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const authResult = await requireRole(["ADMIN", "HR", "FINANCE"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
 
     const companyId = (session.user as any).companyId;
     if (!companyId) {

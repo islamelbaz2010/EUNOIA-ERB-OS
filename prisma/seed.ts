@@ -52,11 +52,11 @@ async function main() {
   const branch = await prisma.branch.create({
     data: {
       companyId: company.id,
-      name: "Riyadh HQ",
-      nameAr: "المقر الرئيسي - الرياض",
+      name: "Cairo HQ",
+      nameAr: "المقر الرئيسي - القاهرة",
       address: "123 Business Street",
-      city: "Riyadh",
-      phone: "+966500000000",
+      city: "Cairo",
+      phone: "+201000000000",
       isDefault: true,
     },
   });
@@ -66,7 +66,7 @@ async function main() {
     data: {
       companyId: company.id,
       name: "Standard Working Hours",
-      nameAr: "ساعات العمل标准",
+      nameAr: "ساعات العمل",
       isDefault: true,
       sunday: true,
       monday: true,
@@ -105,7 +105,7 @@ async function main() {
         firstName: emp.firstName,
         lastName: emp.lastName,
         displayName: `${emp.firstName} ${emp.lastName}`,
-        phone: `+96650${String(1000000 + i).padStart(7, "0")}`,
+        phone: `+2010100000${i}`,
         email: `${emp.firstName.toLowerCase()}.${emp.lastName.toLowerCase()}@eunoia.com`,
         joinDate: new Date("2024-01-15"),
         jobTitle: emp.jobTitle,
@@ -162,8 +162,8 @@ async function main() {
   console.log("Leave types created:", leaveTypes.length);
 
   const holidays = await Promise.all([
-    prisma.holiday.create({ data: { companyId: company.id, name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: new Date("2024-09-23"), isRecurring: true } }),
-    prisma.holiday.create({ data: { companyId: company.id, name: "Founding Day", nameAr: "يوم التأسيس", date: new Date("2024-02-22"), isRecurring: true } }),
+    prisma.holiday.create({ data: { companyId: company.id, name: "Egyptian Revolution Day", nameAr: "عيد ثورة 23 يوليو", date: new Date("2024-07-23"), isRecurring: true } }),
+    prisma.holiday.create({ data: { companyId: company.id, name: "Sham El-Nessim", nameAr: "شم النسيم", date: new Date("2024-05-06"), isRecurring: true } }),
   ]);
   console.log("Holidays created:", holidays.length);
 
@@ -171,12 +171,12 @@ async function main() {
     prisma.client.create({
       data: {
         companyId: company.id,
-        name: "TechCorp Saudi",
+        name: "TechCorp Egypt",
         contactPerson: "Omar Abdullah",
-        phone: "+966511111111",
-        email: "omar@techcorp.sa",
-        city: "Riyadh",
-        country: "Saudi Arabia",
+        phone: "+20102000000",
+        email: "omar@techcorp.eg",
+        city: "Cairo",
+        country: "Egypt",
         paymentTerms: 30,
       },
     }),
@@ -185,10 +185,10 @@ async function main() {
         companyId: company.id,
         name: "Green Valley Trading",
         contactPerson: "Layla Mansour",
-        phone: "+966522222222",
-        email: "layla@greenvalley.sa",
-        city: "Jeddah",
-        country: "Saudi Arabia",
+        phone: "+20103000000",
+        email: "layla@greenvalley.eg",
+        city: "Alexandria",
+        country: "Egypt",
         paymentTerms: 15,
       },
     }),

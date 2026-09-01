@@ -117,8 +117,8 @@ export async function POST(request: NextRequest) {
         data: {
           employeeId: validatedData.employeeId,
           date: dateOnly,
-          scheduledStart: "08:00",
-          scheduledEnd: "17:00",
+          scheduledStart: "10:30",
+          scheduledEnd: "18:30",
           firstIn: validatedData.firstIn ? new Date(validatedData.firstIn) : undefined,
           lastOut: validatedData.lastOut ? new Date(validatedData.lastOut) : undefined,
           status: validatedData.status || "PRESENT",

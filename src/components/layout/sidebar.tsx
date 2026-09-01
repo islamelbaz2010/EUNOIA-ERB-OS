@@ -37,25 +37,25 @@ interface NavSection {
 const navSections: NavSection[] = [
   {
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { label: "Employees", href: "/employees", icon: <Users className="h-5 w-5" /> },
-      { label: "Attendance", href: "/attendance", icon: <Clock className="h-5 w-5" /> },
-      { label: "Payroll", href: "/payroll", icon: <DollarSign className="h-5 w-5" /> },
+      { label: "لوحة التحكم", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
+      { label: "الموظفون", href: "/employees", icon: <Users className="h-5 w-5" /> },
+      { label: "الحضور والانصراف", href: "/attendance", icon: <Clock className="h-5 w-5" /> },
+      { label: "الرواتب", href: "/payroll", icon: <DollarSign className="h-5 w-5" /> },
     ],
   },
   {
-    title: "Business",
+    title: "العمليات",
     items: [
-      { label: "Clients", href: "/clients", icon: <Briefcase className="h-5 w-5" /> },
-      { label: "Services", href: "/services", icon: <FileText className="h-5 w-5" /> },
-      { label: "Invoices", href: "/invoices", icon: <Receipt className="h-5 w-5" /> },
+      { label: "العملاء", href: "/clients", icon: <Briefcase className="h-5 w-5" /> },
+      { label: "الخدمات", href: "/services", icon: <FileText className="h-5 w-5" /> },
+      { label: "الفواتير", href: "/invoices", icon: <Receipt className="h-5 w-5" /> },
     ],
   },
   {
-    title: "Analytics",
+    title: "التقارير",
     items: [
-      { label: "Reports", href: "/reports", icon: <BarChart3 className="h-5 w-5" /> },
-      { label: "Admin", href: "/admin", icon: <Settings className="h-5 w-5" /> },
+      { label: "التقارير", href: "/reports", icon: <BarChart3 className="h-5 w-5" /> },
+      { label: "الإدارة", href: "/admin", icon: <Settings className="h-5 w-5" /> },
     ],
   },
 ];

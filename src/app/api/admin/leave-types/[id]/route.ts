@@ -14,12 +14,19 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const leaveType = await db.leaveType.findUnique({ where: { id } });
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const leaveType = await db.leaveType.findFirst({
+      where: { id, companyId },
+    });
     if (!leaveType) {
       return NextResponse.json({ error: "Leave type not found" }, { status: 404 });
     }
 
-    await db.leaveType.delete({ where: { id } });
+    await db.leaveType.delete({ where: { id, companyId } });
 
     await db.auditLog.create({
       data: {

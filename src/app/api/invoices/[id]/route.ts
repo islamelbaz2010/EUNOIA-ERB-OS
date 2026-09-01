@@ -75,8 +75,13 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateInvoiceSchema.parse(body);
 
-    const existing = await db.invoice.findUnique({
-      where: { id },
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const existing = await db.invoice.findFirst({
+      where: { id, companyId },
       include: { items: true },
     });
 
@@ -132,7 +137,7 @@ export async function PUT(
     }
 
     const updated = await db.invoice.update({
-      where: { id },
+      where: { id, companyId },
       data: updateData,
       include: { items: true },
     });
@@ -169,7 +174,14 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const invoice = await db.invoice.findUnique({ where: { id } });
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const invoice = await db.invoice.findFirst({
+      where: { id, companyId },
+    });
     if (!invoice) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
@@ -182,7 +194,7 @@ export async function DELETE(
     }
 
     const updated = await db.invoice.update({
-      where: { id },
+      where: { id, companyId },
       data: { status: "CANCELLED" },
     });
 

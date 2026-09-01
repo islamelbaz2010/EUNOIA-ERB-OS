@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     const company = await db.company.findUnique({ where: { id: companyId } });
     const vatEnabled = validatedData.vatEnabled ?? false;
-    const vatRate = vatEnabled ? Number(company?.vatRate || 15) : 0;
+    const vatRate = vatEnabled ? Number(company?.vatRate || 0) : 0;
     const vatAmount = afterDiscount * (vatRate / 100);
     const total = afterDiscount + vatAmount;
 

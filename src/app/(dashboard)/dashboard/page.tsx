@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   Users,
   Clock,
@@ -60,7 +61,7 @@ export default function DashboardPage() {
         setActivities(data.recentPayments?.map((p: any) => ({
           id: p.id,
           type: "payment",
-          message: `Payment of ${p.amount} recorded for ${p.invoice?.invoiceNumber ?? "invoice"}`,
+          message: `تسجيل دفعة بقيمة ${formatCurrency(Number(p.amount))} للفاتورة ${p.invoice?.invoiceNumber ?? ""}`,
           timestamp: p.createdAt,
         })) || []);
       }
@@ -79,6 +80,7 @@ export default function DashboardPage() {
       icon: Users,
       color: "text-primary",
       bgColor: "bg-primary/10",
+      href: "/employees",
     },
     {
       title: "حضور اليوم",
@@ -87,6 +89,7 @@ export default function DashboardPage() {
       icon: Clock,
       color: "text-success",
       bgColor: "bg-success/10",
+      href: "/attendance",
     },
     {
       title: "متأخرون اليوم",
@@ -95,6 +98,7 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       color: "text-warning",
       bgColor: "bg-warning/10",
+      href: "/attendance?status=LATE",
     },
     {
       title: "غياب اليوم",
@@ -103,6 +107,7 @@ export default function DashboardPage() {
       icon: UserX,
       color: "text-destructive",
       bgColor: "bg-destructive/10",
+      href: "/attendance?status=ABSENT",
     },
     {
       title: "استثناءات معلقة",
@@ -111,6 +116,7 @@ export default function DashboardPage() {
       icon: FileWarning,
       color: "text-warning",
       bgColor: "bg-warning/10",
+      href: "/attendance?tab=exceptions",
     },
     {
       title: "فواتير معلقة",
@@ -119,6 +125,7 @@ export default function DashboardPage() {
       icon: Receipt,
       color: "text-primary",
       bgColor: "bg-primary/10",
+      href: "/invoices?status=PENDING",
     },
     {
       title: "فواتير متأخرة",
@@ -127,6 +134,7 @@ export default function DashboardPage() {
       icon: Clock3,
       color: "text-destructive",
       bgColor: "bg-destructive/10",
+      href: "/invoices?status=OVERDUE",
     },
   ];
 
@@ -155,7 +163,8 @@ export default function DashboardPage() {
           : statCards.map((card) => {
               const Icon = card.icon;
               return (
-                <Card key={card.titleEn}>
+                <Link key={card.titleEn} href={card.href} className="block">
+                <Card className="transition-colors hover:bg-muted/50 cursor-pointer">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -168,6 +177,7 @@ export default function DashboardPage() {
                     </div>
                   </CardContent>
                 </Card>
+              </Link>
               );
             })}
       </div>
@@ -214,7 +224,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <Badge variant="secondary" className="shrink-0">
-                    {activity.type}
+                    دفعة
                   </Badge>
                 </div>
               ))}

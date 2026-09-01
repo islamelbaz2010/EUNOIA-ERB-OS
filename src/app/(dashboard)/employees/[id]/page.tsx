@@ -13,6 +13,7 @@ import {
   Wallet,
   FileText,
   User,
+  Pencil,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,8 @@ export default function EmployeeDetailPage() {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [profileForm, setProfileForm] = React.useState<Record<string, any>>({});
+  const [salaryFormOpen, setSalaryFormOpen] = React.useState(false);
+  const [salaryForm, setSalaryForm] = React.useState({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "SAR" });
 
   React.useEffect(() => {
     fetchEmployee();
@@ -179,6 +182,47 @@ export default function EmployeeDetailPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSaveSalary() {
+    if (!salaryForm.baseSalary || salaryForm.baseSalary <= 0) {
+      toast({ title: "خطأ", description: "أدخل الراتب الأساسي", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/employees/${employeeId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ salary: salaryForm }),
+      });
+      if (res.ok) {
+        toast({ title: "تم حفظ الراتب بنجاح" });
+        setSalaryFormOpen(false);
+        fetchEmployee();
+      } else {
+        toast({ title: "خطأ", description: "فشل في حفظ الراتب", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في حفظ الراتب", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openSalaryForm() {
+    const current = employee?.salaryProfiles[0];
+    if (current) {
+      setSalaryForm({
+        baseSalary: Number(current.baseSalary),
+        overtimeRate: 0,
+        hourlyRate: 0,
+        currency: current.currency || "SAR",
+      });
+    } else {
+      setSalaryForm({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "SAR" });
+    }
+    setSalaryFormOpen(true);
   }
 
   if (loading) {
@@ -395,50 +439,127 @@ export default function EmployeeDetailPage() {
         </TabsContent>
 
         <TabsContent value="salary" className="space-y-4">
-          {employee.salaryProfiles.length === 0 ? (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>بيانات الراتب</CardTitle>
+                <Button variant="outline" size="sm" onClick={openSalaryForm}>
+                  {employee.salaryProfiles.length === 0 ? (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      إضافة راتب
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      تعديل
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {employee.salaryProfiles.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Wallet className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                  <p className="text-muted-foreground">لم يتم تعيين راتب بعد</p>
+                </div>
+              ) : (
+                employee.salaryProfiles.map((profile) => (
+                  <div key={profile.id} className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="rounded-lg border p-4">
+                        <p className="text-sm text-muted-foreground">الراتب الأساسي</p>
+                        <p className="text-lg font-bold">{formatCurrency(Number(profile.baseSalary))}</p>
+                      </div>
+                      <div className="rounded-lg border p-4">
+                        <p className="text-sm text-muted-foreground">تاريخ السريان</p>
+                        <p className="text-lg font-bold">{formatDate(profile.effectiveFrom)}</p>
+                      </div>
+                      <div className="rounded-lg border p-4">
+                        <p className="text-sm text-muted-foreground">العملة</p>
+                        <p className="text-lg font-bold">{profile.currency}</p>
+                      </div>
+                    </div>
+                    {profile.components.length > 0 && (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>النوع</TableHead>
+                            <TableHead>الاسم</TableHead>
+                            <TableHead>المبلغ</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {profile.components.map((comp) => (
+                            <TableRow key={comp.id}>
+                              <TableCell>
+                                <Badge variant={comp.type.includes("DEDUCTION") ? "destructive" : "default"}>
+                                  {comp.type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{comp.name}</TableCell>
+                              <TableCell>{formatCurrency(Number(comp.amount))}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {salaryFormOpen && (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Wallet className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground">لم يتم تعيين راتب بعد</p>
+              <CardHeader>
+                <CardTitle>{employee.salaryProfiles.length === 0 ? "إضافة راتب" : "تعديل الراتب"}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label>الراتب الأساسي *</Label>
+                    <Input
+                      type="number"
+                      value={salaryForm.baseSalary}
+                      onChange={(e) => setSalaryForm((prev) => ({ ...prev, baseSalary: parseFloat(e.target.value) || 0 }))}
+                      min="0"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>معدل العمل الإضافي</Label>
+                    <Input
+                      type="number"
+                      value={salaryForm.overtimeRate}
+                      onChange={(e) => setSalaryForm((prev) => ({ ...prev, overtimeRate: parseFloat(e.target.value) || 0 }))}
+                      min="0"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>معدل الساعة</Label>
+                    <Input
+                      type="number"
+                      value={salaryForm.hourlyRate}
+                      onChange={(e) => setSalaryForm((prev) => ({ ...prev, hourlyRate: parseFloat(e.target.value) || 0 }))}
+                      min="0"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setSalaryFormOpen(false)}>
+                    إلغاء
+                  </Button>
+                  <Button onClick={handleSaveSalary} disabled={saving}>
+                    {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    حفظ
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          ) : (
-            employee.salaryProfiles.map((profile) => (
-              <Card key={profile.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>الراتب الأساسي: {formatCurrency(Number(profile.baseSalary))}</CardTitle>
-                    <Badge variant="secondary">منذ {formatDate(profile.effectiveFrom)}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {profile.components.length > 0 && (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>النوع</TableHead>
-                          <TableHead>الاسم</TableHead>
-                          <TableHead>المبلغ</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {profile.components.map((comp) => (
-                          <TableRow key={comp.id}>
-                            <TableCell>
-                              <Badge variant={comp.type.includes("DEDUCTION") ? "destructive" : "default"}>
-                                {comp.type}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{comp.name}</TableCell>
-                            <TableCell>{formatCurrency(Number(comp.amount))}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            ))
           )}
         </TabsContent>
 

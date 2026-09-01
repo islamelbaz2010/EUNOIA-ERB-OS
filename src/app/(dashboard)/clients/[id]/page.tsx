@@ -27,6 +27,21 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const EGYPT_GOVERNORATES = [
+  "القاهرة", "الإسكندرية", "الإسماعيلية", "الجيزة", "قليوبية",
+  "البحيرة", "الدقهلية", "الشرقية", "كفر الشيخ", "الغربية",
+  "المنوفية", "الفيوم", "بني سويف", "المنيا", "أسيوط",
+  "سوهاج", "قنا", "الأقصر", "أسوان", "البحر الأحمر",
+  "الوادي الجديد", "مطروح", "شمال سيناء", "جنوب سيناء", "بورسعيد", " السويس",
+];
 
 interface Client {
   id: string;
@@ -218,6 +233,29 @@ export default function ClientDetailPage() {
                     value={form.city || ""}
                     onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>البلد</Label>
+                  <Input
+                    value={form.country || ""}
+                    onChange={(e) => setForm((prev) => ({ ...prev, country: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>المحافظة</Label>
+                  <Select
+                    value={form.governorate || ""}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, governorate: value, city: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر المحافظة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EGYPT_GOVERNORATES.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>الرقم الضريبي</Label>

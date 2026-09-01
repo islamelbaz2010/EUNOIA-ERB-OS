@@ -57,13 +57,21 @@ export default function NewInvoicePage() {
     { serviceId: "", description: "", quantity: 1, unitPrice: 0 },
   ]);
   const [discount, setDiscount] = React.useState(0);
+  const [discountType, setDiscountType] = React.useState<"fixed" | "percentage">("fixed");
   const [vatEnabled, setVatEnabled] = React.useState(false);
+  const [vatRate, setVatRate] = React.useState(15);
   const [notes, setNotes] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
     fetchClientsAndServices();
+    fetch("/api/admin/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.vatRate) setVatRate(data.vatRate);
+      })
+      .catch(() => {});
   }, []);
 
   async function fetchClientsAndServices() {
@@ -114,9 +122,9 @@ export default function NewInvoicePage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-  const vatRate = 15;
-  const vatAmount = vatEnabled ? (subtotal - discount) * (vatRate / 100) : 0;
-  const total = subtotal - discount + vatAmount;
+  const discountAmount = discountType === "percentage" ? (subtotal * discount) / 100 : discount;
+  const vatAmount = vatEnabled ? (subtotal - discountAmount) * (vatRate / 100) : 0;
+  const total = subtotal - discountAmount + vatAmount;
 
   async function handleSave(status: "DRAFT" | "SENT") {
     if (!clientId) {
@@ -136,7 +144,7 @@ export default function NewInvoicePage() {
         body: JSON.stringify({
           clientId,
           items: items.filter((i) => i.description),
-          discount,
+          discount: discountAmount,
           vatEnabled,
           notes,
           dueDate: dueDate || undefined,
@@ -310,16 +318,27 @@ export default function NewInvoicePage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">الخصم</span>
-                  <span>-{formatCurrency(discount)}</span>
+                  <span>-{formatCurrency(discountAmount)}</span>
                 </div>
-                <Input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  min="0"
-                  dir="ltr"
-                  className="h-8"
-                />
+                <div className="flex gap-2">
+                  <Select value={discountType} onValueChange={(v) => setDiscountType(v as "fixed" | "percentage")}>
+                    <SelectTrigger className="w-24 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fixed">مبلغ ثابت</SelectItem>
+                      <SelectItem value="percentage">نسبة %</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    value={discount}
+                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                    min="0"
+                    dir="ltr"
+                    className="h-8"
+                  />
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

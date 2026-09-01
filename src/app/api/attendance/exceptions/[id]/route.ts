@@ -69,8 +69,8 @@ export async function PUT(
           data: {
             employeeId: exception.employeeId,
             date: dateOnly,
-            scheduledStart: "08:00",
-            scheduledEnd: "17:00",
+            scheduledStart: "10:30",
+            scheduledEnd: "18:30",
             status: "EXCEPTION",
             hasException: true,
             exceptionId: id,

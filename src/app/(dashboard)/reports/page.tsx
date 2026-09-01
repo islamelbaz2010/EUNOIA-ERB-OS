@@ -34,6 +34,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 
+function safeRenderValue(value: any): string {
+  if (value === null || value === undefined) return "-";
+  if (typeof value === "object") {
+    if (value.name) return value.name;
+    if (value.displayName) return value.displayName;
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 interface ReportCard {
   id: string;
   title: string;
@@ -106,7 +116,7 @@ const summaryLabels: Record<string, string> = {
   totalAmount: "الإجمالي",
   totalPaid: "المدفوع",
   totalBaseSalary: "إجمالي الرواتب الأساسية",
-  totalGross: "إجمالي الرواتب brutto",
+  totalGross: "إجمالي الرواتب",
   totalNet: "صافي الرواتب",
   totalDeductions: "إجمالي الخصومات",
   totalLateMinutes: "إجمالي تأخر (دقيقة)",
@@ -263,7 +273,7 @@ export default function ReportsPage() {
                                   ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime") || key.toLowerCase().includes("price")
                                     ? formatCurrency(value)
                                     : formatNumber(value)
-                                  : String(value ?? "-")}
+                                  : safeRenderValue(value)}
                               </TableCell>
                             ))}
                           </TableRow>

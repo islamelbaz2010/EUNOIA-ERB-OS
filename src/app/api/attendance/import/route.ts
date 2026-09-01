@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import * as XLSX from "xlsx";
+import { requireRole } from "@/lib/authorization";
 
 function parseExcelDate(value: any): Date | null {
   if (!value) return null;
@@ -85,9 +86,13 @@ function findColumn(row: Record<string, any>, aliases: string[]): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const formData = await request.formData();
@@ -120,11 +125,6 @@ export async function POST(request: NextRequest) {
 
     if (jsonData.length === 0) {
       return NextResponse.json({ error: "File is empty" }, { status: 400 });
-    }
-
-    const companyId = (session.user as any).companyId;
-    if (!companyId) {
-      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const firstRow = jsonData[0];
@@ -252,13 +252,19 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const [imports, total] = await Promise.all([
       db.attendanceImport.findMany({
+        where: { companyId },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: "desc" },
       }),
-      db.attendanceImport.count(),
+      db.attendanceImport.count({ where: { companyId } }),
     ]);
 
     return NextResponse.json({

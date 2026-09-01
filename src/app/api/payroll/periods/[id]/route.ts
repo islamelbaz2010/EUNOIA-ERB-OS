@@ -71,7 +71,14 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updatePeriodSchema.parse(body);
 
-    const period = await db.payrollPeriod.findUnique({ where: { id } });
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const period = await db.payrollPeriod.findFirst({
+      where: { id, companyId },
+    });
     if (!period) {
       return NextResponse.json({ error: "Payroll period not found" }, { status: 404 });
     }
@@ -103,7 +110,7 @@ export async function PUT(
       }
     }
 
-    const updated = await db.payrollPeriod.update({ where: { id }, data: updateData });
+    const updated = await db.payrollPeriod.update({ where: { id, companyId }, data: updateData });
 
     await db.auditLog.create({
       data: {

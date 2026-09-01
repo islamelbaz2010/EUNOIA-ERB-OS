@@ -14,12 +14,19 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const holiday = await db.holiday.findUnique({ where: { id } });
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const holiday = await db.holiday.findFirst({
+      where: { id, companyId },
+    });
     if (!holiday) {
       return NextResponse.json({ error: "Holiday not found" }, { status: 404 });
     }
 
-    await db.holiday.delete({ where: { id } });
+    await db.holiday.delete({ where: { id, companyId } });
 
     await db.auditLog.create({
       data: {
