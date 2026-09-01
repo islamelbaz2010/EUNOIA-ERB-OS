@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency = "EGP"): string {
-  return new Intl.NumberFormat("ar-EG", {
+  return new Intl.NumberFormat("en-EG", {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
@@ -15,10 +15,10 @@ export function formatCurrency(amount: number, currency = "EGP"): string {
 }
 
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("ar-EG").format(num);
+  return new Intl.NumberFormat("en-EG").format(num);
 }
 
-export function formatDate(date: Date | string, locale = "ar-EG"): string {
+export function formatDate(date: Date | string, locale = "en-EG"): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString(locale, {
     year: "numeric",
@@ -27,7 +27,7 @@ export function formatDate(date: Date | string, locale = "ar-EG"): string {
   });
 }
 
-export function formatDateTime(date: Date | string, locale = "ar-EG"): string {
+export function formatDateTime(date: Date | string, locale = "en-EG"): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleString(locale, {
     year: "numeric",
