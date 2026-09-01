@@ -65,6 +65,18 @@ export async function GET(
         scheduleAssignments: {
           include: { schedule: true },
         },
+        attendanceDays: {
+          orderBy: { date: "desc" },
+          take: 30,
+        },
+        leaveRequests: {
+          include: { leaveType: true },
+          orderBy: { createdAt: "desc" },
+        },
+        payrollRecords: {
+          include: { payrollPeriod: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 

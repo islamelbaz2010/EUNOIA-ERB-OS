@@ -124,13 +124,33 @@ export default function AttendancePage() {
         body: formData,
       });
       if (res.ok) {
-        toast({ title: "تم رفع الملف بنجاح" });
+        const data = await res.json();
+        toast({ title: "تم رفع الملف بنجاح", description: `${data.validRows} سجل صحيح من أصل ${data.totalRows}` });
         fetchAttendanceData();
       } else {
         toast({ title: "خطأ", description: "فشل في رفع الملف", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "خطأ", description: "فشل في رفع الملف", variant: "destructive" });
+    }
+  }
+
+  async function handleMatch(importId: string) {
+    try {
+      const res = await fetch("/api/attendance/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ importId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: "تم المطابقة بنجاح", description: `${data.matched} مطابق، ${data.unmatched} غير مطابق` });
+        fetchAttendanceData();
+      } else {
+        toast({ title: "خطأ", description: "فشل في المطابقة", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في المطابقة", variant: "destructive" });
     }
   }
 
@@ -256,8 +276,8 @@ export default function AttendancePage() {
                           </div>
                         </TableCell>
                         <TableCell>{formatDate(record.date)}</TableCell>
-                        <TableCell>{record.firstIn ? new Date(record.firstIn).toLocaleTimeString("ar-SA") : "-"}</TableCell>
-                        <TableCell>{record.lastOut ? new Date(record.lastOut).toLocaleTimeString("ar-SA") : "-"}</TableCell>
+                        <TableCell>{record.firstIn ? new Date(record.firstIn).toLocaleTimeString("ar-EG") : "-"}</TableCell>
+                        <TableCell>{record.lastOut ? new Date(record.lastOut).toLocaleTimeString("ar-EG") : "-"}</TableCell>
                         <TableCell>{Math.round(record.workMinutes / 60 * 10) / 10}h</TableCell>
                         <TableCell>{record.lateMinutes > 0 ? `${record.lateMinutes} دقيقة` : "-"}</TableCell>
                         <TableCell>{statusBadge(record.status)}</TableCell>
@@ -307,12 +327,13 @@ export default function AttendancePage() {
                       <TableHead>صحيحة</TableHead>
                       <TableHead>خاطئة</TableHead>
                       <TableHead>التاريخ</TableHead>
+                      <TableHead className="text-left">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {imports.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-4">
+                        <TableCell colSpan={7} className="text-center py-4">
                           لا توجد سجلات استيراد
                         </TableCell>
                       </TableRow>
@@ -329,6 +350,17 @@ export default function AttendancePage() {
                           <TableCell>{imp.validRows}</TableCell>
                           <TableCell>{imp.invalidRows}</TableCell>
                           <TableCell>{formatDate(imp.createdAt)}</TableCell>
+                          <TableCell>
+                            {imp.status === "COMPLETED" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMatch(imp.id)}
+                              >
+                                مطابقة
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}

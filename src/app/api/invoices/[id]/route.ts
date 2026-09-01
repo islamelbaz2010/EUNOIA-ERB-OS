@@ -36,8 +36,13 @@ export async function GET(
 
     const { id } = await params;
 
-    const invoice = await db.invoice.findUnique({
-      where: { id },
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
+    const invoice = await db.invoice.findFirst({
+      where: { id, companyId },
       include: {
         client: true,
         items: { include: { service: true } },

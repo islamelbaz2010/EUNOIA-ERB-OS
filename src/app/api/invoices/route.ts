@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
         where,
         include: {
           client: { select: { id: true, name: true, contactPerson: true } },
+          payments: { select: { id: true, amount: true, paymentDate: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,

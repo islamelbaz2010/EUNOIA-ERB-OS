@@ -63,115 +63,77 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: "#C41E4A",
-    paddingBottom: 15,
+    marginBottom: 10,
   },
-  companyInfo: {
+  headerLeft: {
     flex: 1,
   },
   companyName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#C41E4A",
-    marginBottom: 4,
-  },
-  companyDetail: {
-    fontSize: 9,
-    color: "#4a5568",
     marginBottom: 2,
   },
-  invoiceHeaderRight: {
-    alignItems: "flex-end",
-  },
-  invoiceTitle: {
-    fontSize: 22,
+  companyYear: {
+    fontSize: 14,
     fontWeight: "bold",
     color: "#C41E4A",
+  },
+  copyright: {
+    fontSize: 7,
+    color: "#666666",
+    marginTop: 4,
+  },
+  headerRight: {
+    alignItems: "flex-end",
+  },
+  invoiceLabel: {
+    fontSize: 8,
+    color: "#666666",
   },
   invoiceNumber: {
     fontSize: 10,
-    color: "#4a5568",
+    fontWeight: "bold",
+    color: "#333333",
+  },
+  dateLabel: {
+    fontSize: 8,
+    color: "#666666",
     marginTop: 4,
   },
-  statusBadge: {
-    marginTop: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
-    fontSize: 9,
+  dateValue: {
+    fontSize: 10,
     fontWeight: "bold",
-    textAlign: "center",
+    color: "#333333",
   },
-  statusPaid: {
-    backgroundColor: "#c6f6d5",
-    color: "#276749",
-  },
-  statusSent: {
-    backgroundColor: "#bee3f8",
-    color: "#2b6cb0",
-  },
-  statusDraft: {
-    backgroundColor: "#e2e8f0",
-    color: "#4a5568",
-  },
-  statusOverdue: {
-    backgroundColor: "#fed7d7",
-    color: "#c53030",
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#C41E4A",
-    marginBottom: 8,
-    paddingBottom: 4,
+  divider: {
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: "#C41E4A",
+    marginBottom: 12,
   },
-  twoCol: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  submittedTo: {
+    fontSize: 9,
+    color: "#333333",
+    marginBottom: 8,
+    lineHeight: 1.4,
+  },
+  fromLine: {
+    fontSize: 9,
+    color: "#333333",
+    marginBottom: 12,
+  },
+  notesBox: {
+    borderWidth: 1,
+    borderColor: "#cccccc",
+    borderRadius: 4,
+    padding: 10,
     marginBottom: 16,
   },
-  billToCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 4,
-    padding: 12,
-    marginRight: 8,
-  },
-  detailsCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 4,
-    padding: 12,
-    marginLeft: 8,
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  noteLine: {
+    fontSize: 8,
+    color: "#333333",
     marginBottom: 4,
-  },
-  detailLabel: {
-    fontSize: 9,
-    color: "#4a5568",
-  },
-  detailValue: {
-    fontSize: 9,
-    fontWeight: "bold",
-  },
-  clientName: {
-    fontSize: 11,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  clientDetail: {
-    fontSize: 9,
-    color: "#4a5568",
-    marginBottom: 2,
+    lineHeight: 1.4,
   },
   tableHeader: {
     flexDirection: "row",
@@ -207,7 +169,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   totalsBox: {
-    width: 250,
+    width: 280,
   },
   totalsRow: {
     flexDirection: "row",
@@ -216,18 +178,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   totalsLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: "#4a5568",
   },
   totalsValue: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "bold",
-  },
-  totalsRowDiscount: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 3,
-    paddingHorizontal: 4,
   },
   totalFinalRow: {
     flexDirection: "row",
@@ -237,44 +193,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#C41E4A",
     color: "#ffffff",
     fontWeight: "bold",
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 4,
     borderRadius: 3,
   },
-  paymentSection: {
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 12,
-  },
-  paymentRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 3,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#e2e8f0",
-  },
-  balanceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 6,
-    marginTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
+  subjectedTo: {
+    fontSize: 9,
+    color: "#333333",
+    marginTop: 20,
     fontWeight: "bold",
   },
-  notesSection: {
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 12,
-  },
-  notesText: {
-    fontSize: 9,
-    color: "#4a5568",
-    lineHeight: 1.5,
+  subjectedToName: {
+    fontSize: 11,
+    color: "#333333",
+    fontWeight: "bold",
+    marginTop: 4,
   },
   footer: {
     marginTop: 20,
@@ -283,256 +216,142 @@ const styles = StyleSheet.create({
     borderTopColor: "#e2e8f0",
     flexDirection: "row",
     justifyContent: "space-between",
-    fontSize: 8,
+    fontSize: 7,
     color: "#718096",
   },
-  amountPositive: { color: "#276749" },
-  amountNegative: { color: "#c53030" },
-  sectionSpacing: { marginBottom: 16 },
 });
 
-const formatDateShort = (dateStr: string) => {
+const formatDateInvoice = (dateStr: string) => {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 const formatMoney = (amount: number, currency: string = "EGP") => {
-  return `${currency} ${amount.toLocaleString("en", {
+  return `${currency}${amount.toLocaleString("en", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
-const statusStyleMap: Record<string, typeof styles.statusPaid> = {
-  PAID: styles.statusPaid,
-  PARTIALLY_PAID: styles.statusSent,
-  SENT: styles.statusSent,
-  VIEWED: styles.statusSent,
-  DRAFT: styles.statusDraft,
-  OVERDUE: styles.statusOverdue,
-  CANCELLED: styles.statusOverdue,
-};
-
-const statusLabelMap: Record<string, string> = {
-  DRAFT: "Draft",
-  SENT: "Sent",
-  VIEWED: "Viewed",
-  PARTIALLY_PAID: "Partially Paid",
-  PAID: "Paid",
-  OVERDUE: "Overdue",
-  CANCELLED: "Cancelled",
-};
-
-const paymentMethodLabels: Record<string, string> = {
-  CASH: "Cash",
-  BANK_TRANSFER: "Bank Transfer",
-  CHECK: "Check",
-  CREDIT_CARD: "Credit Card",
-  ONLINE: "Online",
-  OTHER: "Other",
-};
+function parseNotes(noteText: string): string[] {
+  if (!noteText) return [];
+  return noteText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
 
 export function InvoiceDocument({ data }: { data: InvoiceData }) {
-  const paidAmount =
-    data.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-  const outstanding = data.total - paidAmount;
-  const statusKey = data.invoice.status;
+  const invoiceYear = new Date(data.invoice.date).getFullYear();
+  const shortNumber = data.invoice.invoiceNumber.replace(/^INV-\d+-/, "N0.");
+
+  const noteLines = parseNotes(data.invoice.notes || "");
+  const hasNotes = noteLines.length > 0;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.companyInfo}>
-            <Text style={styles.companyName}>{data.company.name}</Text>
-            {data.company.nameAr && (
-              <Text style={styles.companyDetail}>{data.company.nameAr}</Text>
-            )}
-            {data.company.address && (
-              <Text style={styles.companyDetail}>{data.company.address}</Text>
-            )}
-            {data.company.phone && (
-              <Text style={styles.companyDetail}>{data.company.phone}</Text>
-            )}
-            {data.company.email && (
-              <Text style={styles.companyDetail}>{data.company.email}</Text>
-            )}
-            {data.company.vatNumber && (
-              <Text style={styles.companyDetail}>
-                VAT: {data.company.vatNumber}
-              </Text>
-            )}
-          </View>
-          <View style={styles.invoiceHeaderRight}>
-            <Text style={styles.invoiceTitle}>INVOICE</Text>
-            <Text style={styles.invoiceNumber}>
-              {data.invoice.invoiceNumber}
-            </Text>
-            <View
-              style={[
-                styles.statusBadge,
-                statusStyleMap[statusKey] || styles.statusDraft,
-              ]}
-            >
-              <Text>{statusLabelMap[statusKey] || statusKey}</Text>
+          <View style={styles.headerLeft}>
+            <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+              <Text style={styles.companyName}>{data.company.name}</Text>
+              <Text style={styles.companyYear}> INVOICE {invoiceYear}</Text>
             </View>
+            <Text style={styles.copyright}>Copyright@{data.company.name}{invoiceYear}</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <Text style={styles.invoiceLabel}>INVOICE NO.:</Text>
+            <Text style={styles.invoiceNumber}>{shortNumber}</Text>
+            <Text style={styles.dateLabel}>DATE:</Text>
+            <Text style={styles.dateValue}>{formatDateInvoice(data.invoice.date)}</Text>
           </View>
         </View>
 
-        {/* Bill To & Details */}
-        <View style={styles.twoCol}>
-          <View style={styles.billToCard}>
-            <Text style={styles.sectionTitle}>Bill To</Text>
-            <Text style={styles.clientName}>{data.client.name}</Text>
-            {data.client.contactPerson && (
-              <Text style={styles.clientDetail}>
-                {data.client.contactPerson}
-              </Text>
-            )}
-            {data.client.address && (
-              <Text style={styles.clientDetail}>{data.client.address}</Text>
-            )}
-            {data.client.phone && (
-              <Text style={styles.clientDetail}>{data.client.phone}</Text>
-            )}
-            {data.client.email && (
-              <Text style={styles.clientDetail}>{data.client.email}</Text>
-            )}
-          </View>
-          <View style={styles.detailsCard}>
-            <Text style={styles.sectionTitle}>Invoice Details</Text>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Date</Text>
-              <Text style={styles.detailValue}>
-                {formatDateShort(data.invoice.date)}
-              </Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Due Date</Text>
-              <Text style={styles.detailValue}>
-                {formatDateShort(data.invoice.dueDate)}
-              </Text>
-            </View>
-            {data.invoice.paymentTerms && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Payment Terms</Text>
-                <Text style={styles.detailValue}>
-                  {data.invoice.paymentTerms} days
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
+        <View style={styles.divider} />
 
-        {/* Line Items */}
-        <View style={styles.sectionSpacing}>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.colDesc, { color: "#ffffff" }]}>
-              Description
-            </Text>
-            <Text style={[styles.colQty, { color: "#ffffff" }]}>Qty</Text>
-            <Text style={[styles.colPrice, { color: "#ffffff" }]}>
-              Unit Price
-            </Text>
-            <Text style={[styles.colTotal, { color: "#ffffff" }]}>Total</Text>
+        {/* Submitted To */}
+        <Text style={styles.submittedTo}>
+          &quot;This Invoice is submitted to {data.client.contactPerson || data.client.name}
+          {data.client.contactPerson && data.client.name ? ` - ${data.client.name}` : ""}
+          {data.company.nameAr ? `          From/ ${data.company.nameAr}` : `          From/ ${data.company.name}`}&quot;
+        </Text>
+
+        {/* Notes / Payment Terms */}
+        {hasNotes && (
+          <View style={styles.notesBox}>
+            {noteLines.map((line, idx) => (
+              <Text key={idx} style={styles.noteLine}>* {line}</Text>
+            ))}
           </View>
-          {data.items.map((item, idx) => (
-            <View
-              key={idx}
-              style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
-            >
-              <Text style={styles.colDesc}>{item.description}</Text>
-              <Text style={styles.colQty}>{item.quantity}</Text>
-              <Text style={styles.colPrice}>
-                {formatMoney(item.unitPrice, data.currency)}
-              </Text>
-              <Text style={styles.colTotal}>
-                {formatMoney(item.total, data.currency)}
-              </Text>
-            </View>
-          ))}
+        )}
+
+        {/* Line Items Table */}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.colDesc, { color: "#ffffff" }]}>INVOICE ITEM DESCRIPTION</Text>
+          <Text style={[styles.colQty, { color: "#ffffff" }]}>QTY</Text>
+          <Text style={[styles.colPrice, { color: "#ffffff" }]}>Price</Text>
+          <Text style={[styles.colTotal, { color: "#ffffff" }]}>Total ( In {data.currency})</Text>
         </View>
+        {data.items.map((item, idx) => (
+          <View
+            key={idx}
+            style={idx % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+          >
+            <Text style={styles.colDesc}>{item.description}</Text>
+            <Text style={styles.colQty}>{item.quantity}</Text>
+            <Text style={styles.colPrice}>
+              {formatMoney(item.unitPrice, data.currency)}
+            </Text>
+            <Text style={styles.colTotal}>
+              {formatMoney(item.total, data.currency)}
+            </Text>
+          </View>
+        ))}
 
         {/* Totals */}
         <View style={styles.totalsSection}>
           <View style={styles.totalsBox}>
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>Subtotal</Text>
+              <Text style={styles.totalsLabel}>MARKETING AGENCY MARKUP</Text>
               <Text style={styles.totalsValue}>
-                {formatMoney(data.subtotal, data.currency)}
+                {formatMoney(data.discount, data.currency)}
               </Text>
             </View>
-            {data.discount > 0 && (
-              <View style={styles.totalsRowDiscount}>
-                <Text style={styles.totalsLabel}>Discount</Text>
-                <Text style={[styles.totalsValue, styles.amountNegative]}>
-                  -{formatMoney(data.discount, data.currency)}
-                </Text>
-              </View>
-            )}
             {data.vatEnabled && (
               <View style={styles.totalsRow}>
-                <Text style={styles.totalsLabel}>VAT ({data.vatRate}%)</Text>
+                <Text style={styles.totalsLabel}>Taxes ({data.vatRate}%)</Text>
                 <Text style={styles.totalsValue}>
                   {formatMoney(data.vatAmount, data.currency)}
                 </Text>
               </View>
             )}
+            <View style={styles.totalsRow}>
+              <Text style={styles.totalsLabel}>TOTAL (In {data.currency})</Text>
+              <Text style={styles.totalsValue}>
+                {formatMoney(data.subtotal, data.currency)}
+              </Text>
+            </View>
             <View style={styles.totalFinalRow}>
-              <Text>Total</Text>
+              <Text>TOTAL (In {data.currency})</Text>
               <Text>{formatMoney(data.total, data.currency)}</Text>
             </View>
           </View>
         </View>
 
-        {/* Payments */}
-        {data.payments && data.payments.length > 0 && (
-          <View style={styles.paymentSection}>
-            <Text style={styles.sectionTitle}>Payments Received</Text>
-            {data.payments.map((payment, idx) => (
-              <View key={idx} style={styles.paymentRow}>
-                <Text style={{ fontSize: 9, color: "#4a5568" }}>
-                  {formatDateShort(payment.date)} -{" "}
-                  {paymentMethodLabels[payment.method] || payment.method}
-                </Text>
-                <Text style={{ fontSize: 9, fontWeight: "bold" }}>
-                  {formatMoney(payment.amount, data.currency)}
-                </Text>
-              </View>
-            ))}
-            <View style={styles.balanceRow}>
-              <Text style={{ fontSize: 10, color: "#4a5568" }}>
-                Outstanding Balance
-              </Text>
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: "bold",
-                  color: outstanding > 0 ? "#c53030" : "#276749",
-                }}
-              >
-                {formatMoney(outstanding, data.currency)}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Notes */}
-        {data.invoice.notes && (
-          <View style={styles.notesSection}>
-            <Text style={styles.sectionTitle}>Notes</Text>
-            <Text style={styles.notesText}>{data.invoice.notes}</Text>
-          </View>
+        {/* Subjected To */}
+        <Text style={styles.subjectedTo}>SUBJECTED TO:</Text>
+        {data.company.nameAr && (
+          <Text style={styles.subjectedToName}>{data.company.nameAr}</Text>
         )}
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>{data.company.name}</Text>
-          <Text>{data.invoice.invoiceNumber}</Text>
+          <Text>Copyright@{data.company.name}{invoiceYear}</Text>
+          <Text>{shortNumber}</Text>
         </View>
       </Page>
     </Document>

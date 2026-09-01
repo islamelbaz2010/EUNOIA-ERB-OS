@@ -233,7 +233,9 @@ export default function ReportsPage() {
                             ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime")
                               ? formatCurrency(value)
                               : formatNumber(value)
-                            : String(value)}
+                            : typeof value === "object" && value !== null
+                              ? Object.entries(value as Record<string, number>).map(([k, v]) => `${k}: ${v}`).join(", ")
+                              : String(value)}
                         </p>
                       </CardContent>
                     </Card>
