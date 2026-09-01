@@ -71,7 +71,14 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+            <DropdownMenuItem onClick={() => {
+              const employeeId = (user as any)?.employeeId;
+              if (employeeId) {
+                router.push(`/employees/${employeeId}`);
+              } else {
+                router.push("/dashboard");
+              }
+            }}>
               <User className="mr-2 h-4 w-4" />
               الملف الشخصي
             </DropdownMenuItem>

@@ -264,6 +264,8 @@ model Employee {
   maritalStatus    MaritalStatus?
   address          String?
   city             String?
+  country          String?
+  governorate      String?
   joinDate         DateTime
   endDate          DateTime?
   employmentStatus EmploymentStatus @default(ACTIVE)
@@ -677,6 +679,7 @@ model Client {
   address       String?
   city          String?
   country       String?
+  governorate   String?
   taxNumber     String?
   vatNumber     String?
   paymentTerms  Int          @default(30)

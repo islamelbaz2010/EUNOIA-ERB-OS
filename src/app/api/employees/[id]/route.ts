@@ -13,19 +13,21 @@ const updateEmployeeSchema = z.object({
   lastNameAr: z.string().optional(),
   displayName: z.string().min(1).optional(),
   phone: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email().optional().or(z.literal("")),
   nationalId: z.string().optional(),
-  dateOfBirth: z.string().datetime().optional(),
-  gender: z.enum(["MALE", "FEMALE"]).optional(),
-  maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]).optional(),
+  dateOfBirth: z.string().optional(),
+  gender: z.enum(["MALE", "FEMALE"]).optional().or(z.literal("")),
+  maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]).optional().or(z.literal("")),
   address: z.string().optional(),
   city: z.string().optional(),
-  joinDate: z.string().datetime().optional(),
+  country: z.string().optional(),
+  governorate: z.string().optional(),
+  joinDate: z.string().optional(),
   jobTitle: z.string().optional(),
   fingerprintId: z.string().optional(),
   notes: z.string().optional(),
   employmentStatus: z.enum(["ACTIVE", "ON_LEAVE", "TERMINATED", "SUSPENDED"]).optional(),
-  endDate: z.string().datetime().optional(),
+  endDate: z.string().optional(),
   salary: z
     .object({
       baseSalary: z.number().positive(),
@@ -128,14 +130,24 @@ export async function PUT(
     const { salary, ...employeeData } = validatedData;
 
     const updateData: any = { ...employeeData };
-    if (validatedData.joinDate) {
-      updateData.joinDate = new Date(validatedData.joinDate);
+
+    if (updateData.email === "") updateData.email = null;
+    if (updateData.gender === "") updateData.gender = null;
+    if (updateData.maritalStatus === "") updateData.maritalStatus = null;
+    if (updateData.dateOfBirth === "") {
+      updateData.dateOfBirth = null;
+    } else if (updateData.dateOfBirth) {
+      updateData.dateOfBirth = new Date(updateData.dateOfBirth);
     }
-    if (validatedData.dateOfBirth) {
-      updateData.dateOfBirth = new Date(validatedData.dateOfBirth);
+    if (updateData.joinDate === "") {
+      updateData.joinDate = null;
+    } else if (updateData.joinDate) {
+      updateData.joinDate = new Date(updateData.joinDate);
     }
-    if (validatedData.endDate) {
-      updateData.endDate = new Date(validatedData.endDate);
+    if (updateData.endDate === "") {
+      updateData.endDate = null;
+    } else if (updateData.endDate) {
+      updateData.endDate = new Date(updateData.endDate);
     }
 
     const employee = await db.employee.update({

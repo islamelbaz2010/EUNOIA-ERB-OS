@@ -38,6 +38,14 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -81,8 +89,10 @@ interface SalaryComponent {
   id: string;
   type: string;
   name: string;
+  nameAr?: string;
   amount: number;
   isPercentage: boolean;
+  isRecurring: boolean;
 }
 
 interface ScheduleAssignment {
@@ -128,7 +138,30 @@ export default function EmployeeDetailPage() {
   const [saving, setSaving] = React.useState(false);
   const [profileForm, setProfileForm] = React.useState<Record<string, any>>({});
   const [salaryFormOpen, setSalaryFormOpen] = React.useState(false);
-  const [salaryForm, setSalaryForm] = React.useState({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "SAR" });
+  const [salaryForm, setSalaryForm] = React.useState({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "EGP" });
+
+  const componentTypeLabels: Record<string, string> = {
+    ALLOWANCE: "بدل",
+    DEDUCTION: "خصم",
+    BONUS: "مكافأة",
+    OVERTIME: "عمل إضافي",
+    COMMISSION: "عمولة",
+    ADVANCE: "سلفة",
+    PENALTY: "غرامة",
+    REIMBURSEMENT: "تعويض",
+    MANUAL: "يدوي",
+  };
+
+  const [componentDialogOpen, setComponentDialogOpen] = React.useState(false);
+  const [editingComponent, setEditingComponent] = React.useState<SalaryComponent | null>(null);
+  const [componentForm, setComponentForm] = React.useState({
+    type: "ALLOWANCE",
+    name: "",
+    nameAr: "",
+    amount: 0,
+    isPercentage: false,
+    isRecurring: true,
+  });
 
   React.useEffect(() => {
     fetchEmployee();
@@ -154,6 +187,9 @@ export default function EmployeeDetailPage() {
           address: data.address || "",
           city: data.city || "",
           jobTitle: data.jobTitle || "",
+          displayName: data.displayName || "",
+          country: data.country || "",
+          governorate: data.governorate || "",
         });
       }
     } catch (error) {
@@ -217,12 +253,96 @@ export default function EmployeeDetailPage() {
         baseSalary: Number(current.baseSalary),
         overtimeRate: 0,
         hourlyRate: 0,
-        currency: current.currency || "SAR",
+        currency: current.currency || "EGP",
       });
     } else {
-      setSalaryForm({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "SAR" });
+      setSalaryForm({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "EGP" });
     }
     setSalaryFormOpen(true);
+  }
+
+  function openAddComponentDialog() {
+    setEditingComponent(null);
+    setComponentForm({ type: "ALLOWANCE", name: "", nameAr: "", amount: 0, isPercentage: false, isRecurring: true });
+    setComponentDialogOpen(true);
+  }
+
+  function openEditComponentDialog(comp: SalaryComponent) {
+    setEditingComponent(comp);
+    setComponentForm({
+      type: comp.type,
+      name: comp.name,
+      nameAr: comp.nameAr || "",
+      amount: Number(comp.amount),
+      isPercentage: comp.isPercentage,
+      isRecurring: comp.isRecurring ?? true,
+    });
+    setComponentDialogOpen(true);
+  }
+
+  async function handleSaveComponent() {
+    const profile = employee?.salaryProfiles[0];
+    if (!profile) return;
+
+    if (!componentForm.name || componentForm.amount <= 0) {
+      toast({ title: "خطأ", description: "أدخل الاسم والمبلغ", variant: "destructive" });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (editingComponent) {
+        const res = await fetch(`/api/salary-components/${editingComponent.id}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) throw new Error("Failed to delete");
+      }
+
+      const res = await fetch("/api/salary-components", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salaryProfileId: profile.id,
+          type: componentForm.type,
+          name: componentForm.name,
+          nameAr: componentForm.nameAr || undefined,
+          amount: componentForm.amount,
+          isPercentage: componentForm.isPercentage,
+          isRecurring: componentForm.isRecurring,
+        }),
+      });
+      if (res.ok) {
+        toast({ title: editingComponent ? "تم تعديل البند" : "تم إضافة البند" });
+        setComponentDialogOpen(false);
+        fetchEmployee();
+      } else {
+        toast({ title: "خطأ", description: "فشل في حفظ البند", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في حفظ البند", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteComponent(id: string) {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/salary-components/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast({ title: "تم حذف البند" });
+        fetchEmployee();
+      } else {
+        toast({ title: "خطأ", description: "فشل في حذف البند", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في حذف البند", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) {
@@ -420,6 +540,20 @@ export default function EmployeeDetailPage() {
                     onChange={(e) => setProfileForm((prev) => ({ ...prev, city: e.target.value }))}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>الدولة</Label>
+                  <Input
+                    value={profileForm.country}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, country: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>المنطقة</Label>
+                  <Input
+                    value={profileForm.governorate}
+                    onChange={(e) => setProfileForm((prev) => ({ ...prev, governorate: e.target.value }))}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>العنوان</Label>
@@ -481,6 +615,13 @@ export default function EmployeeDetailPage() {
                         <p className="text-lg font-bold">{profile.currency}</p>
                       </div>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium">بنود الراتب</h3>
+                      <Button variant="outline" size="sm" onClick={openAddComponentDialog}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        إضافة بند
+                      </Button>
+                    </div>
                     {profile.components.length > 0 && (
                       <Table>
                         <TableHeader>
@@ -488,22 +629,39 @@ export default function EmployeeDetailPage() {
                             <TableHead>النوع</TableHead>
                             <TableHead>الاسم</TableHead>
                             <TableHead>المبلغ</TableHead>
+                            <TableHead className="w-20"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {profile.components.map((comp) => (
                             <TableRow key={comp.id}>
                               <TableCell>
-                                <Badge variant={comp.type.includes("DEDUCTION") ? "destructive" : "default"}>
-                                  {comp.type}
+                                <Badge variant={comp.type.includes("DEDUCTION") || comp.type === "PENALTY" ? "destructive" : "default"}>
+                                  {componentTypeLabels[comp.type] || comp.type}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{comp.name}</TableCell>
-                              <TableCell>{formatCurrency(Number(comp.amount))}</TableCell>
+                              <TableCell>{comp.nameAr || comp.name}</TableCell>
+                              <TableCell>
+                                {formatCurrency(Number(comp.amount))}
+                                {comp.isPercentage && " (%)"}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditComponentDialog(comp)}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteComponent(comp.id)}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
+                    )}
+                    {profile.components.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-4">لا توجد بنود راتب</p>
                     )}
                   </div>
                 ))
@@ -561,6 +719,83 @@ export default function EmployeeDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          <Dialog open={componentDialogOpen} onOpenChange={setComponentDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingComponent ? "تعديل البند" : "إضافة بند راتب"}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>النوع *</Label>
+                  <Select
+                    value={componentForm.type}
+                    onValueChange={(value) => setComponentForm((prev) => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(componentTypeLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>الاسم (إنجليزي) *</Label>
+                  <Input
+                    value={componentForm.name}
+                    onChange={(e) => setComponentForm((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g. Housing Allowance"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>الاسم (عربي)</Label>
+                  <Input
+                    value={componentForm.nameAr}
+                    onChange={(e) => setComponentForm((prev) => ({ ...prev, nameAr: e.target.value }))}
+                    placeholder="مثال: بدل سكن"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>المبلغ *</Label>
+                  <Input
+                    type="number"
+                    value={componentForm.amount}
+                    onChange={(e) => setComponentForm((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                    min="0"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isPercentage"
+                      checked={componentForm.isPercentage}
+                      onCheckedChange={(checked) => setComponentForm((prev) => ({ ...prev, isPercentage: !!checked }))}
+                    />
+                    <Label htmlFor="isPercentage" className="cursor-pointer">نسبة مئوية</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="isRecurring"
+                      checked={componentForm.isRecurring}
+                      onCheckedChange={(checked) => setComponentForm((prev) => ({ ...prev, isRecurring: !!checked }))}
+                    />
+                    <Label htmlFor="isRecurring" className="cursor-pointer">متكرر شهرياً</Label>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setComponentDialogOpen(false)}>إلغاء</Button>
+                <Button onClick={handleSaveComponent} disabled={saving}>
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  حفظ
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="schedule" className="space-y-4">

@@ -111,17 +111,33 @@ export default function ClientDetailPage() {
   async function handleSave() {
     setSaving(true);
     try {
+      const payload = {
+        name: form.name || undefined,
+        nameAr: form.nameAr || undefined,
+        contactPerson: form.contactPerson || undefined,
+        phone: form.phone || undefined,
+        email: form.email || undefined,
+        address: form.address || undefined,
+        city: form.city || undefined,
+        country: form.country || undefined,
+        taxNumber: form.taxNumber || undefined,
+        paymentTerms: form.paymentTerms || undefined,
+        notes: form.notes || undefined,
+      };
       const res = await fetch(`/api/clients/${clientId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         toast({ title: "تم الحفظ بنجاح" });
         fetchClient();
+      } else {
+        const error = await res.json().catch(() => ({}));
+        toast({ title: "خطأ", description: error.error || "فشل في حفظ البيانات", variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "خطأ", variant: "destructive" });
+      toast({ title: "خطأ", description: "فشل في حفظ البيانات", variant: "destructive" });
     } finally {
       setSaving(false);
     }

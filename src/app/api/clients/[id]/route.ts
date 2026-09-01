@@ -14,6 +14,7 @@ const updateClientSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
+  governorate: z.string().optional(),
   taxNumber: z.string().optional(),
   vatNumber: z.string().optional(),
   paymentTerms: z.number().int().min(0).optional(),

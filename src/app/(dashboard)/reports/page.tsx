@@ -102,6 +102,32 @@ const reportCards: ReportCard[] = [
   },
 ];
 
+const reportItemLabels: Record<string, string> = {
+  id: "المعرف",
+  employeeId: "الموظف",
+  employeeCode: "كود الموظف",
+  displayName: "الاسم",
+  firstName: "الاسم الأول",
+  lastName: "اسم العائلة",
+  baseSalary: "الراتب الأساسي",
+  totalAdditions: "الإضافات",
+  totalDeductions: "الخصومات",
+  overtime: "العمل الإضافي",
+  gross: "الإجمالي",
+  net: "الصافي",
+  status: "الحالة",
+  period: "الفترة",
+  invoiceNumber: "رقم الفاتورة",
+  clientName: "العميل",
+  total: "الإجمالي",
+  amount: "المبلغ",
+  paymentDate: "التاريخ",
+  method: "الطريقة",
+  date: "التاريخ",
+  workMinutes: "ساعات العمل",
+  lateMinutes: "التأخير",
+};
+
 const summaryLabels: Record<string, string> = {
   totalEmployees: "إجمالي الموظفين",
   totalPresent: "الحضور",
@@ -245,7 +271,7 @@ export default function ReportsPage() {
                               : formatNumber(value)
                             : typeof value === "object" && value !== null
                               ? Object.entries(value as Record<string, number>).map(([k, v]) => `${k}: ${v}`).join(", ")
-                              : String(value)}
+                              : safeRenderValue(value)}
                         </p>
                       </CardContent>
                     </Card>
@@ -260,7 +286,7 @@ export default function ReportsPage() {
                       <TableHeader>
                         <TableRow>
                           {Object.keys(reportData.items[0]).map((key) => (
-                            <TableHead key={key}>{summaryLabels[key] || key}</TableHead>
+                            <TableHead key={key}>{reportItemLabels[key] || summaryLabels[key] || key}</TableHead>
                           ))}
                         </TableRow>
                       </TableHeader>
