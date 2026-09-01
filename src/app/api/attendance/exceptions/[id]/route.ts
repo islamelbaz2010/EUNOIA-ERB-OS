@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const updateExceptionSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
@@ -13,16 +14,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "MANAGER"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateExceptionSchema.parse(body);
 
-    const exception = await db.attendanceException.findUnique({ where: { id } });
+    const exception = await db.attendanceException.findFirst({
+      where: { id, employee: { companyId } },
+    });
     if (!exception) {
       return NextResponse.json({ error: "Exception not found" }, { status: 404 });
     }

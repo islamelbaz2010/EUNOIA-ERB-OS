@@ -31,11 +31,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           data: { lastLoginAt: new Date() },
         });
 
+        let companyId: string | null = null;
+        if (user.employeeId) {
+          const employee = await db.employee.findUnique({
+            where: { id: user.employeeId },
+            select: { companyId: true },
+          });
+          companyId = employee?.companyId ?? null;
+        }
+        if (!companyId) {
+          const company = await db.company.findFirst({ select: { id: true } });
+          companyId = company?.id ?? null;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          companyId,
         };
       },
     }),
@@ -48,6 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as any).role;
         token.id = user.id;
+        token.companyId = (user as any).companyId;
       }
       return token;
     },
@@ -55,6 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         (session.user as any).role = token.role;
         (session.user as any).id = token.id;
+        (session.user as any).companyId = token.companyId;
       }
       return session;
     },

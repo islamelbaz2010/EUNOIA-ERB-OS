@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +22,10 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, title, className }: HeaderProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const user = session?.user as any;
+
   return (
     <header
       className={cn(
@@ -52,7 +58,7 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                  A
+                  {user?.name?.charAt(0) ?? "U"}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -60,17 +66,17 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
           <DropdownMenuContent className="w-56" align="end">
             <div className="flex items-center gap-2 p-2">
               <div className="flex flex-col space-y-1 leading-none">
-                <p className="font-medium">Admin User</p>
-                <p className="text-sm text-muted-foreground">admin@eunoia.com</p>
+                <p className="font-medium">{user?.name ?? "User"}</p>
+                <p className="text-sm text-muted-foreground">{user?.email ?? ""}</p>
               </div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/dashboard")}>
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem className="text-destructive" onClick={() => signOut({ callbackUrl: "/login" })}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

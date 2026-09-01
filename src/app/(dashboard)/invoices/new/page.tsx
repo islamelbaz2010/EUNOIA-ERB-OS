@@ -74,11 +74,11 @@ export default function NewInvoicePage() {
       ]);
       if (clientsRes.ok) {
         const data = await clientsRes.json();
-        setClients(data.items || []);
+        setClients(data.clients || []);
       }
       if (servicesRes.ok) {
         const data = await servicesRes.json();
-        setServices(data.items || []);
+        setServices(Array.isArray(data) ? data : data.items || []);
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);

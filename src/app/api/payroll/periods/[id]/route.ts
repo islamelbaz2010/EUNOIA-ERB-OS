@@ -27,10 +27,15 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
-    const period = await db.payrollPeriod.findUnique({
-      where: { id },
+    const period = await db.payrollPeriod.findFirst({
+      where: { id, companyId },
       include: {
         records: {
           include: {

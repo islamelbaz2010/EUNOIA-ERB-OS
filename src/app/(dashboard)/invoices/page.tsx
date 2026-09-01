@@ -79,11 +79,11 @@ export default function InvoicesPage() {
       const res = await fetch(`/api/invoices?${params}`);
       if (res.ok) {
         const data = await res.json();
-        setInvoices(data.items || []);
+        setInvoices(data.invoices || []);
         setPagination((prev) => ({
           ...prev,
-          total: data.total || 0,
-          totalPages: data.totalPages || 0,
+          total: data.pagination?.total || 0,
+          totalPages: data.pagination?.totalPages || 0,
         }));
       }
     } catch (error) {

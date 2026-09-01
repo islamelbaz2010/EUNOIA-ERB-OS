@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const updateRecordSchema = z.object({
   baseSalary: z.number().optional(),
@@ -35,10 +36,15 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
-    const record = await db.payrollRecord.findUnique({
-      where: { id },
+    const record = await db.payrollRecord.findFirst({
+      where: { id, employee: { companyId } },
       include: {
         employee: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
         componentsList: true,
@@ -62,16 +68,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "FINANCE"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateRecordSchema.parse(body);
 
-    const existing = await db.payrollRecord.findUnique({ where: { id } });
+    const existing = await db.payrollRecord.findFirst({
+      where: { id, employee: { companyId } },
+    });
     if (!existing) {
       return NextResponse.json({ error: "Payroll record not found" }, { status: 404 });
     }

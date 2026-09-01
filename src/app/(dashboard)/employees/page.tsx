@@ -110,11 +110,11 @@ export default function EmployeesPage() {
       const res = await fetch(`/api/employees?${params}`);
       if (res.ok) {
         const data = await res.json();
-        setEmployees(data.items || []);
+        setEmployees(data.employees || []);
         setPagination((prev) => ({
           ...prev,
-          total: data.total || 0,
-          totalPages: data.totalPages || 0,
+          total: data.pagination?.total || 0,
+          totalPages: data.pagination?.totalPages || 0,
         }));
       }
     } catch (error) {
@@ -152,7 +152,7 @@ export default function EmployeesPage() {
   async function handleDeactivate(id: string) {
     try {
       const res = await fetch(`/api/employees/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employmentStatus: "TERMINATED" }),
       });

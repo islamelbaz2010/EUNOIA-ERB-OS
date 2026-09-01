@@ -144,8 +144,8 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [companyRes, schedulesRes, holidaysRes, leaveTypesRes, auditRes] = await Promise.all([
-        fetch("/api/admin/company"),
-        fetch("/api/admin/schedules"),
+        fetch("/api/admin/settings"),
+        fetch("/api/admin/work-schedules"),
         fetch("/api/admin/holidays"),
         fetch("/api/admin/leave-types"),
         fetch("/api/admin/audit-log"),
@@ -154,19 +154,19 @@ export default function AdminPage() {
       if (companyRes.ok) setCompany(await companyRes.json());
       if (schedulesRes.ok) {
         const data = await schedulesRes.json();
-        setSchedules(data.items || []);
+        setSchedules(Array.isArray(data) ? data : data.schedules || data.items || []);
       }
       if (holidaysRes.ok) {
         const data = await holidaysRes.json();
-        setHolidays(data.items || []);
+        setHolidays(Array.isArray(data) ? data : data.holidays || data.items || []);
       }
       if (leaveTypesRes.ok) {
         const data = await leaveTypesRes.json();
-        setLeaveTypes(data.items || []);
+        setLeaveTypes(Array.isArray(data) ? data : data.leaveTypes || data.items || []);
       }
       if (auditRes.ok) {
         const data = await auditRes.json();
-        setAuditLogs(data.items || []);
+        setAuditLogs(data.logs || data.items || []);
       }
     } catch (error) {
       console.error("Failed to fetch admin data:", error);
@@ -179,8 +179,8 @@ export default function AdminPage() {
     if (!company) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/company", {
-        method: "PATCH",
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(company),
       });
@@ -197,7 +197,7 @@ export default function AdminPage() {
   async function handleAddSchedule(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/schedules", {
+      const res = await fetch("/api/admin/work-schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(scheduleForm),

@@ -21,6 +21,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
@@ -29,7 +34,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("startDate") || undefined;
     const endDate = searchParams.get("endDate") || undefined;
 
-    const where: any = {};
+    const where: any = { invoice: { companyId } };
     if (invoiceId) where.invoiceId = invoiceId;
     if (method) where.method = method;
     if (startDate || endDate) {
@@ -67,11 +72,16 @@ export async function POST(request: NextRequest) {
     if (authResult.error) return authResult.error;
     const session = authResult.session;
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const body = await request.json();
     const validatedData = createPaymentSchema.parse(body);
 
     const invoice = await db.invoice.findUnique({
-      where: { id: validatedData.invoiceId },
+      where: { id: validatedData.invoiceId, companyId },
       include: { paymentSchedule: { include: { installmentList: true } } },
     });
 

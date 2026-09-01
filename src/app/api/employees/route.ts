@@ -70,6 +70,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "20");
@@ -78,7 +83,7 @@ export async function GET(request: NextRequest) {
     const branchId = searchParams.get("branchId") || undefined;
     const departmentId = searchParams.get("departmentId") || undefined;
 
-    const where: any = {};
+    const where: any = { companyId };
 
     if (search) {
       where.OR = [

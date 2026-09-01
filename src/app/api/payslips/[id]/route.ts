@@ -13,10 +13,15 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
-    const payslip = await db.payslip.findUnique({
-      where: { id },
+    const payslip = await db.payslip.findFirst({
+      where: { id, employee: { companyId } },
       include: {
         employee: {
           include: {

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,6 +67,8 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = session?.user as any;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -144,16 +147,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                A
+                {user?.name?.charAt(0) ?? "U"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Admin User</p>
+              <p className="text-sm font-medium truncate">{user?.name ?? "User"}</p>
               <p className="text-xs text-muted-foreground truncate">
-                admin@eunoia.com
+                {user?.email ?? ""}
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => signOut({ callbackUrl: "/login" })}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

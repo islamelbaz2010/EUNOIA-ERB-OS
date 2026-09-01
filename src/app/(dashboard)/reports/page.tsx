@@ -64,7 +64,7 @@ const reportCards: ReportCard[] = [
     bgColor: "bg-success/10",
   },
   {
-    id: "invoice",
+    id: "invoices",
     title: "Invoice Report",
     titleAr: "تقرير الفواتير",
     description: "تقرير عن الفواتير الصادرة",

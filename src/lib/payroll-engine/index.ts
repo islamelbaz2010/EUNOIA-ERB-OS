@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 
+export const WORKING_DAYS_PER_MONTH = 30;
+
 export async function calculateEmployeePayroll(
   employeeId: string,
   startDate: Date,
@@ -66,7 +68,7 @@ export async function calculateEmployeePayroll(
     orderBy: { date: "asc" },
   });
 
-  // 3. Count actual work days in the period (for pro-rating)
+  // 3. Count attendance summaries
   const totalDaysInRange = attendanceDays.length;
   const presentDays = attendanceDays.filter((d: { status: string }) => d.status === "PRESENT").length;
   const absentDays = attendanceDays.filter((d: { status: string }) => d.status === "ABSENT").length;
@@ -75,66 +77,25 @@ export async function calculateEmployeePayroll(
   const leaveDays = attendanceDays.filter((d: { status: string }) => d.status === "LEAVE").length;
   const holidayDays = attendanceDays.filter((d: { status: string }) => d.status === "HOLIDAY").length;
 
-  // 4. Pro-rate base salary based on actual days worked
-  // Get the employee's effective work schedule for the period
-  const scheduleAssignment = await db.scheduleAssignment.findFirst({
-    where: {
-      employeeId,
-      effectiveFrom: { lte: endDate },
-      OR: [
-        { effectiveTo: null },
-        { effectiveTo: { gte: startDate } },
-      ],
-    },
-    include: { schedule: true },
-    orderBy: { effectiveFrom: "desc" },
-  });
+  // 4. Base salary: full monthly amount (pro-ration only for mid-period joins/exits)
+  const baseSalary = baseSalaryMonthly;
 
-  const schedule = scheduleAssignment?.schedule;
-  // JS getDay(): 0=Sunday, 1=Monday, ..., 6=Saturday
-  const dayFlags: Record<number, boolean> = {
-    0: schedule?.sunday ?? true,
-    1: schedule?.monday ?? true,
-    2: schedule?.tuesday ?? true,
-    3: schedule?.wednesday ?? true,
-    4: schedule?.thursday ?? true,
-    5: schedule?.friday ?? false,
-    6: schedule?.saturday ?? false,
-  };
+  // 5. Daily salary for attendance deductions (fixed 30-day divisor)
+  const dailySalary = baseSalaryMonthly / WORKING_DAYS_PER_MONTH;
 
-  let actualWorkDaysInPeriod = 0;
-  const tempDate = new Date(startDate);
-  while (tempDate <= endDate) {
-    const dayOfWeek = tempDate.getDay();
-    if (dayFlags[dayOfWeek]) {
-      actualWorkDaysInPeriod++;
-    }
-    tempDate.setDate(tempDate.getDate() + 1);
-  }
-
-  // Base salary pro-rated: (days worked / total work days in period) * monthly salary
-  const baseSalary =
-    totalDaysInRange > 0
-      ? (presentDays / Math.max(actualWorkDaysInPeriod, 1)) * baseSalaryMonthly
-      : 0;
-
-  // 5. Calculate attendance deductions
+  // 6. Calculate attendance deductions
   const scheduledWorkMinutes = attendanceDays.length > 0
     ? (() => {
         const firstDay = attendanceDays[0];
         const startMinutes = firstDay.scheduledStart
           .split(":")
-          .reduce((acc, val) => acc * 60 + parseInt(val), 0);
+          .reduce((acc: number, val: string) => acc * 60 + parseInt(val), 0);
         const endMinutes = firstDay.scheduledEnd
           .split(":")
-          .reduce((acc, val) => acc * 60 + parseInt(val), 0);
+          .reduce((acc: number, val: string) => acc * 60 + parseInt(val), 0);
         return endMinutes - startMinutes;
       })()
     : 480; // Default 8 hours
-
-  const dailySalary = actualWorkDaysInPeriod > 0
-    ? baseSalaryMonthly / actualWorkDaysInPeriod
-    : 0;
 
   let attendanceDeductions = 0;
 
@@ -154,7 +115,7 @@ export async function calculateEmployeePayroll(
     }
   }
 
-  // 6. Calculate overtime
+  // 7. Calculate overtime
   let overtime = 0;
   const overtimeMultiplier = 1.5;
   for (const day of attendanceDays) {
@@ -164,8 +125,9 @@ export async function calculateEmployeePayroll(
     }
   }
 
-  // 7. Add recurring salary components (additions)
+  // 8. Add salary components (additions and deductions)
   let totalAdditions = 0;
+  let totalDeductions = 0;
   const components: Array<{
     type: string;
     name: string;
@@ -179,7 +141,7 @@ export async function calculateEmployeePayroll(
     type: "BASE_SALARY",
     name: "Base Salary",
     amount: Math.round(baseSalary * 100) / 100,
-    description: "Pro-rated base salary for the period",
+    description: "Monthly base salary",
   });
 
   // Overtime component
@@ -193,10 +155,8 @@ export async function calculateEmployeePayroll(
     totalAdditions += overtime;
   }
 
-  // Recurring additions (allowances, bonuses, etc.)
+  // Salary components (all components, not just recurring)
   for (const comp of salaryProfile.components) {
-    if (!comp.isRecurring) continue;
-
     const amount = Number(comp.amount);
     let componentAmount = amount;
 
@@ -221,25 +181,7 @@ export async function calculateEmployeePayroll(
         nameAr: comp.nameAr ?? undefined,
         amount: Math.round(componentAmount * 100) / 100,
       });
-    }
-  }
-
-  // 8. Deduct recurring deductions
-  let totalDeductions = 0;
-  for (const comp of salaryProfile.components) {
-    if (!comp.isRecurring) continue;
-
-    const amount = Number(comp.amount);
-    let componentAmount = amount;
-
-    if (comp.isPercentage && comp.percentageOf) {
-      const baseComp = components.find((c) => c.type === comp.percentageOf);
-      if (baseComp) {
-        componentAmount = (baseComp.amount * amount) / 100;
-      }
-    }
-
-    if (
+    } else if (
       comp.type === "DEDUCTION" ||
       comp.type === "ADVANCE" ||
       comp.type === "PENALTY"
@@ -284,6 +226,8 @@ export async function calculateEmployeePayroll(
   }
 
   // 10. Calculate gross and net
+  // gross = base + additions + overtime - attendanceDeductions
+  // net = gross - deductions (manual deductions like advances, penalties)
   const gross = baseSalary + totalAdditions - attendanceDeductions;
   const net = gross - totalDeductions;
 
@@ -323,8 +267,8 @@ export async function calculatePeriodPayroll(
     throw new Error(`Payroll period ${periodId} not found`);
   }
 
-  if (period.status !== "DRAFT" && period.status !== "CALCULATED") {
-    throw new Error(`Payroll period ${periodId} is not in a calculable state`);
+  if (period.status !== "DRAFT") {
+    throw new Error(`Payroll period ${periodId} is not in DRAFT status`);
   }
 
   // Get all active employees
@@ -450,25 +394,4 @@ export async function getEffectiveSalary(
   });
 
   return salaryProfile;
-}
-
-function calculateDailySalary(
-  monthlySalary: number,
-  workDaysInMonth: number
-): number {
-  if (workDaysInMonth <= 0) return 0;
-  return monthlySalary / workDaysInMonth;
-}
-
-function calculateLateDeduction(
-  lateMinutes: number,
-  dailySalary: number,
-  scheduledWorkMinutes: number
-): number {
-  if (lateMinutes <= 0 || scheduledWorkMinutes <= 0) return 0;
-  return (lateMinutes / scheduledWorkMinutes) * dailySalary;
-}
-
-function calculateAbsenceDeduction(dailySalary: number): number {
-  return dailySalary;
 }

@@ -10,6 +10,7 @@ const updateInvoiceSchema = z.object({
   discount: z.number().min(0).optional(),
   vatEnabled: z.boolean().optional(),
   notes: z.string().optional(),
+  status: z.enum(["DRAFT", "SENT", "VIEWED", "PARTIALLY_PAID", "PAID", "OVERDUE", "CANCELLED"]).optional(),
   paymentTerms: z.number().int().min(0).optional(),
   items: z
     .array(
@@ -78,11 +79,15 @@ export async function PUT(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    if (existing.status !== "DRAFT") {
+    const updateData: any = {};
+    if (validatedData.status) {
+      updateData.status = validatedData.status;
+    }
+
+    if (existing.status !== "DRAFT" && !validatedData.status) {
       return NextResponse.json({ error: "Only draft invoices can be edited" }, { status: 400 });
     }
 
-    const updateData: any = {};
     if (validatedData.clientId) updateData.clientId = validatedData.clientId;
     if (validatedData.dueDate) updateData.dueDate = new Date(validatedData.dueDate);
     if (validatedData.discount !== undefined) updateData.discount = validatedData.discount;

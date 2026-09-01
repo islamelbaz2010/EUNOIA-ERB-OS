@@ -87,22 +87,22 @@ export default function AttendancePage() {
       if (statusFilter !== "all") params.set("status", statusFilter);
 
       const [recordsRes, importsRes, exceptionsRes] = await Promise.all([
-        fetch(`/api/attendance?${params}`),
-        fetch("/api/attendance/imports"),
+        fetch(`/api/attendance/records?${params}`),
+        fetch("/api/attendance/import"),
         fetch(`/api/attendance/exceptions?status=${exceptionStatus}`),
       ]);
 
       if (recordsRes.ok) {
         const data = await recordsRes.json();
-        setRecords(data.items || []);
+        setRecords(data.records || []);
       }
       if (importsRes.ok) {
         const data = await importsRes.json();
-        setImports(data.items || []);
+        setImports(data.imports || []);
       }
       if (exceptionsRes.ok) {
         const data = await exceptionsRes.json();
-        setExceptions(data.items || []);
+        setExceptions(data.exceptions || []);
       }
     } catch (error) {
       console.error("Failed to fetch attendance data:", error);
@@ -137,7 +137,7 @@ export default function AttendancePage() {
   async function handleExceptionAction(id: string, action: "APPROVED" | "REJECTED") {
     try {
       const res = await fetch(`/api/attendance/exceptions/${id}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: action }),
       });

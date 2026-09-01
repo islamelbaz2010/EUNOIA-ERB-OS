@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const updateLeaveSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
@@ -13,17 +14,21 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "MANAGER"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateLeaveSchema.parse(body);
 
-    const leaveRequest = await db.leaveRequest.findUnique({
-      where: { id },
+    const leaveRequest = await db.leaveRequest.findFirst({
+      where: { id, employee: { companyId } },
       include: { leaveType: true },
     });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const createExceptionSchema = z.object({
   employeeId: z.string().uuid(),
@@ -27,9 +28,13 @@ const createExceptionSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "MANAGER"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -40,7 +45,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("startDate") || undefined;
     const endDate = searchParams.get("endDate") || undefined;
 
-    const where: any = {};
+    const where: any = { employee: { companyId } };
     if (employeeId) where.employeeId = employeeId;
     if (status) where.status = status;
     if (startDate || endDate) {
@@ -53,7 +58,7 @@ export async function GET(request: NextRequest) {
       db.attendanceException.findMany({
         where,
         include: {
-          employee: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
+          employee: { select: { id: true, firstName: true, lastName: true, displayName: true, employeeCode: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -74,13 +79,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const body = await request.json();
     const validatedData = createExceptionSchema.parse(body);
+
+    // Verify employee belongs to the company
+    const employee = await db.employee.findFirst({
+      where: { id: validatedData.employeeId, companyId },
+    });
+    if (!employee) {
+      return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+    }
 
     const exception = await db.attendanceException.create({
       data: {

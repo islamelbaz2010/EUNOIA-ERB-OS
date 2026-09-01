@@ -97,7 +97,7 @@ export default function ClientDetailPage() {
     setSaving(true);
     try {
       const res = await fetch(`/api/clients/${clientId}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });

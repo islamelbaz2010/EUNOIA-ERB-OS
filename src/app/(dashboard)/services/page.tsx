@@ -78,7 +78,7 @@ export default function ServicesPage() {
       const res = await fetch("/api/services");
       if (res.ok) {
         const data = await res.json();
-        setServices(data.items || []);
+        setServices(Array.isArray(data) ? data : data.items || []);
       }
     } catch (error) {
       console.error("Failed to fetch services:", error);
@@ -111,7 +111,7 @@ export default function ServicesPage() {
     setSaving(true);
     try {
       const url = editingId ? `/api/services/${editingId}` : "/api/services";
-      const method = editingId ? "PATCH" : "POST";
+      const method = editingId ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },

@@ -46,10 +46,15 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
     const employee = await db.employee.findUnique({
-      where: { id },
+      where: { id, companyId },
       include: {
         branch: true,
         department: true,
@@ -83,12 +88,17 @@ export async function PUT(
     if (authResult.error) return authResult.error;
     const session = authResult.session;
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateEmployeeSchema.parse(body);
 
     const existingEmployee = await db.employee.findUnique({
-      where: { id },
+      where: { id, companyId },
       include: {
         salaryProfiles: {
           where: { effectiveTo: null },
@@ -201,9 +211,14 @@ export async function DELETE(
     if (authResult.error) return authResult.error;
     const session = authResult.session;
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
-    const employee = await db.employee.findUnique({ where: { id } });
+    const employee = await db.employee.findUnique({ where: { id, companyId } });
     if (!employee) {
       return NextResponse.json({ error: "Employee not found" }, { status: 404 });
     }

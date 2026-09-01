@@ -11,6 +11,7 @@ const createInvoiceSchema = z.object({
   vatEnabled: z.boolean().optional(),
   notes: z.string().optional(),
   paymentTerms: z.number().int().min(0).optional(),
+  status: z.enum(["DRAFT", "SENT"]).optional(),
   items: z.array(
     z.object({
       serviceId: z.string().uuid().optional(),
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
         total: total,
         notes: validatedData.notes,
         paymentTerms: validatedData.paymentTerms ?? 30,
+        status: validatedData.status ?? "DRAFT",
         createdById: (session.user as any).id,
         items: {
           create: validatedData.items.map((item) => ({

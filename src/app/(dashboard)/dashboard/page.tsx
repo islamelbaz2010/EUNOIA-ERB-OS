@@ -48,8 +48,21 @@ export default function DashboardPage() {
       const res = await fetch("/api/dashboard");
       if (res.ok) {
         const data = await res.json();
-        setStats(data.stats);
-        setActivities(data.activities || []);
+        setStats({
+          totalEmployees: data.totalEmployees ?? 0,
+          todayAttendance: data.todayAttendance ?? 0,
+          lateToday: data.lateToday ?? 0,
+          absentToday: data.absentToday ?? 0,
+          pendingExceptions: data.pendingExceptions ?? 0,
+          outstandingInvoices: data.outstandingInvoices?.count ?? 0,
+          overdueInvoices: data.overdueInvoices?.count ?? 0,
+        });
+        setActivities(data.recentPayments?.map((p: any) => ({
+          id: p.id,
+          type: "payment",
+          message: `Payment of ${p.amount} recorded for ${p.invoice?.invoiceNumber ?? "invoice"}`,
+          timestamp: p.createdAt,
+        })) || []);
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);

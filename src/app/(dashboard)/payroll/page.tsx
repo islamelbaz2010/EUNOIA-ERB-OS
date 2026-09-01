@@ -69,7 +69,7 @@ export default function PayrollPage() {
   async function fetchPayrollData() {
     setLoading(true);
     try {
-      const res = await fetch("/api/payroll");
+      const res = await fetch("/api/payroll/periods");
       if (res.ok) {
         const data = await res.json();
         setPeriods(data.periods || []);
@@ -84,10 +84,10 @@ export default function PayrollPage() {
   async function fetchRecords(periodId: string) {
     setSelectedPeriod(periodId);
     try {
-      const res = await fetch(`/api/payroll/${periodId}/records`);
+      const res = await fetch(`/api/payroll/periods/${periodId}`);
       if (res.ok) {
         const data = await res.json();
-        setRecords(data.items || []);
+        setRecords(data.records || []);
       }
     } catch (error) {
       console.error("Failed to fetch records:", error);
@@ -97,8 +97,10 @@ export default function PayrollPage() {
   async function handleCalculate(periodId: string) {
     setCalculating(true);
     try {
-      const res = await fetch(`/api/payroll/${periodId}/calculate`, {
+      const res = await fetch("/api/payroll/calculate", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ periodId }),
       });
       if (res.ok) {
         toast({ title: "تم الحساب بنجاح" });
@@ -116,8 +118,10 @@ export default function PayrollPage() {
 
   async function handleApprove(periodId: string) {
     try {
-      const res = await fetch(`/api/payroll/${periodId}/approve`, {
-        method: "POST",
+      const res = await fetch(`/api/payroll/periods/${periodId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "APPROVED" }),
       });
       if (res.ok) {
         toast({ title: "تمت الموافقة بنجاح" });

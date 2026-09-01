@@ -99,11 +99,11 @@ export default function ClientsPage() {
       const res = await fetch(`/api/clients?${params}`);
       if (res.ok) {
         const data = await res.json();
-        setClients(data.items || []);
+        setClients(data.clients || []);
         setPagination((prev) => ({
           ...prev,
-          total: data.total || 0,
-          totalPages: data.totalPages || 0,
+          total: data.pagination?.total || 0,
+          totalPages: data.pagination?.totalPages || 0,
         }));
       }
     } catch (error) {

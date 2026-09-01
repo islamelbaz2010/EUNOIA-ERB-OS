@@ -101,10 +101,10 @@ export default function InvoiceDetailPage() {
   async function handleRecordPayment() {
     setRecording(true);
     try {
-      const res = await fetch(`/api/invoices/${invoiceId}/payments`, {
+      const res = await fetch("/api/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(paymentForm),
+        body: JSON.stringify({ ...paymentForm, invoiceId }),
       });
       if (res.ok) {
         toast({ title: "تم تسجيل الدفعة بنجاح" });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { requireRole } from "@/lib/authorization";
 
 const updateServiceSchema = z.object({
   name: z.string().min(1).optional(),
@@ -24,9 +25,14 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
+    }
+
     const { id } = await params;
 
-    const service = await db.service.findUnique({ where: { id } });
+    const service = await db.service.findFirst({ where: { id, companyId } });
     if (!service) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
@@ -43,16 +49,20 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "FINANCE"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateServiceSchema.parse(body);
 
-    const service = await db.service.findUnique({ where: { id } });
+    const service = await db.service.findFirst({ where: { id, companyId } });
     if (!service) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
@@ -85,14 +95,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireRole(["ADMIN", "HR", "FINANCE"]);
+    if (authResult.error) return authResult.error;
+    const session = authResult.session;
+
+    const companyId = (session.user as any).companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "No company found" }, { status: 400 });
     }
 
     const { id } = await params;
 
-    const service = await db.service.findUnique({ where: { id } });
+    const service = await db.service.findFirst({ where: { id, companyId } });
     if (!service) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }

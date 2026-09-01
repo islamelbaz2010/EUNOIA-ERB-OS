@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate && (prisma skills sync || exit 0)"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
@@ -52,6 +52,9 @@
     "zod": "^4.5.4",
     "zustand": "^5.0.15"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/jest": "^30.0.0",
@@ -63,6 +66,7 @@
     "jest": "^30.5.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.12",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     const period = await db.payrollPeriod.findUnique({
-      where: { id: periodId },
+      where: { id: periodId, companyId },
     });
 
     if (!period) {
