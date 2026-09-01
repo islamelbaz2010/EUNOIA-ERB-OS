@@ -14,6 +14,7 @@ import {
   FileText,
   User,
   Pencil,
+  Power,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,7 @@ interface SalaryComponent {
   amount: number;
   isPercentage: boolean;
   isRecurring: boolean;
+  isActive: boolean;
 }
 
 interface ScheduleAssignment {
@@ -367,6 +369,27 @@ export default function EmployeeDetailPage() {
       }
     } catch (error) {
       toast({ title: "خطأ", description: "فشل في حذف البند", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleToggleComponentActive(comp: SalaryComponent) {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/salary-components/${comp.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !comp.isActive }),
+      });
+      if (res.ok) {
+        toast({ title: comp.isActive ? "تم تعطيل البند" : "تم تفعيل البند" });
+        fetchEmployee();
+      } else {
+        toast({ title: "خطأ", description: "فشل في تحديث البند", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في تحديث البند", variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -713,12 +736,13 @@ export default function EmployeeDetailPage() {
                             <TableHead>النوع</TableHead>
                             <TableHead>الاسم</TableHead>
                             <TableHead>المبلغ</TableHead>
-                            <TableHead className="w-20"></TableHead>
+                            <TableHead>الحالة</TableHead>
+                            <TableHead className="w-28"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {profile.components.map((comp) => (
-                            <TableRow key={comp.id}>
+                            <TableRow key={comp.id} className={comp.isActive ? "" : "opacity-60"}>
                               <TableCell>
                                 <Badge variant={comp.type.includes("DEDUCTION") || comp.type === "PENALTY" ? "destructive" : "default"}>
                                   {componentTypeLabels[comp.type] || comp.type}
@@ -730,9 +754,17 @@ export default function EmployeeDetailPage() {
                                 {comp.isPercentage && " (%)"}
                               </TableCell>
                               <TableCell>
+                                <Badge variant={comp.isActive ? "success" : "secondary"}>
+                                  {comp.isActive ? "نشط" : "غير نشط"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
                                 <div className="flex gap-1">
                                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditComponentDialog(comp)}>
                                     <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleToggleComponentActive(comp)}>
+                                    <Power className="h-3.5 w-3.5" />
                                   </Button>
                                   <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteComponent(comp.id)}>
                                     <Trash2 className="h-3.5 w-3.5" />
