@@ -3,13 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { requireRole } from "@/lib/authorization";
-
-const statusTransitions: Record<string, string[]> = {
-  DRAFT: ["CALCULATED"],
-  CALCULATED: ["UNDER_REVIEW"],
-  UNDER_REVIEW: ["APPROVED"],
-  APPROVED: ["LOCKED"],
-};
+import { canTransitionPayrollStatus } from "@/lib/payroll-workflow";
 
 const updatePeriodSchema = z.object({
   status: z.enum(["CALCULATED", "UNDER_REVIEW", "APPROVED", "LOCKED"]).optional(),
@@ -88,8 +82,7 @@ export async function PUT(
     if (validatedData.notes !== undefined) updateData.notes = validatedData.notes;
 
     if (validatedData.status) {
-      const allowed = statusTransitions[period.status];
-      if (!allowed || !allowed.includes(validatedData.status)) {
+      if (!canTransitionPayrollStatus(period.status, validatedData.status)) {
         return NextResponse.json(
           { error: `Cannot transition from ${period.status} to ${validatedData.status}` },
           { status: 400 }

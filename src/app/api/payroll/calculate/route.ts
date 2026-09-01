@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { requireRole } from "@/lib/authorization";
 import { calculatePeriodPayroll } from "@/lib/payroll-engine";
+import { canCalculatePayrollPeriod } from "@/lib/payroll-workflow";
 
 const calculateSchema = z.object({
   periodId: z.string().uuid(),
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payroll period not found" }, { status: 404 });
     }
 
-    if (period.status !== "DRAFT") {
+    if (!canCalculatePayrollPeriod(period.status)) {
       return NextResponse.json({ error: "Period must be in DRAFT status to calculate" }, { status: 400 });
     }
 

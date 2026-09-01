@@ -32,6 +32,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { canCalculatePayrollPeriod, translatePayrollError } from "@/lib/payroll-workflow";
 
 interface PayrollPeriod {
   id: string;
@@ -108,7 +109,11 @@ export default function PayrollPage() {
         fetchRecords(periodId);
       } else {
         const errorData = await res.json().catch(() => ({}));
-        toast({ title: "خطأ", description: errorData.error || "فشل في الحساب", variant: "destructive" });
+        toast({
+          title: "خطأ",
+          description: translatePayrollError(errorData.error, "فشل في الحساب"),
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({ title: "خطأ", variant: "destructive" });
@@ -117,16 +122,26 @@ export default function PayrollPage() {
     }
   }
 
-  async function handleApprove(periodId: string) {
+  // The existing status machine (see /api/payroll/periods/[id]) only allows
+  // CALCULATED -> UNDER_REVIEW, not a direct jump to APPROVED. This sends
+  // the period into review, matching the backend's actual next valid state.
+  async function handleSendForReview(periodId: string) {
     try {
       const res = await fetch(`/api/payroll/periods/${periodId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "APPROVED" }),
+        body: JSON.stringify({ status: "UNDER_REVIEW" }),
       });
       if (res.ok) {
-        toast({ title: "تمت الموافقة بنجاح" });
+        toast({ title: "تم إرسال الفترة للمراجعة" });
         fetchPayrollData();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        toast({
+          title: "خطأ",
+          description: translatePayrollError(errorData.error, "تعذر تنفيذ الإجراء"),
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({ title: "خطأ", variant: "destructive" });
@@ -144,6 +159,11 @@ export default function PayrollPage() {
     const item = map[status] || { variant: "default" as const, label: status };
     return <Badge variant={item.variant}>{item.label}</Badge>;
   };
+
+  // Calculation is only ever valid for a DRAFT period (enforced by the
+  // backend). Only offer those here so the button can never be clicked
+  // for a period the API will reject.
+  const draftPeriods = periods.filter((p) => canCalculatePayrollPeriod(p.status));
 
   return (
     <div className="space-y-6">
@@ -221,7 +241,7 @@ export default function PayrollPage() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {period.status === "DRAFT" && (
+                            {canCalculatePayrollPeriod(period.status) && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -235,7 +255,8 @@ export default function PayrollPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleApprove(period.id)}
+                                onClick={() => handleSendForReview(period.id)}
+                                title="إرسال للمراجعة"
                               >
                                 <CheckCircle className="h-4 w-4" />
                               </Button>
@@ -257,38 +278,44 @@ export default function PayrollPage() {
               <CardTitle>حساب الرواتب</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="اختر الفترة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {periods
-                      .filter((p) => p.status === "DRAFT" || p.status === "CALCULATED")
-                      .map((period) => (
-                        <SelectItem key={period.id} value={period.id}>
-                          {period.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={() => handleCalculate(selectedPeriod)}
-                  disabled={!selectedPeriod || calculating}
-                >
-                  {calculating ? (
-                    "جاري الحساب..."
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      بدء الحساب
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                سيتم حساب رواتب جميع الموظفين النشطين في الفترة المحددة
-              </p>
+              {draftPeriods.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  لا توجد فترات رواتب في حالة مسودة قابلة للحساب. الفترات التي تم حسابها بالفعل يمكن متابعتها من تبويب "الفترات" أو "السجلات".
+                </p>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4">
+                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                      <SelectTrigger className="w-64">
+                        <SelectValue placeholder="اختر الفترة" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {draftPeriods.map((period) => (
+                          <SelectItem key={period.id} value={period.id}>
+                            {period.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={() => handleCalculate(selectedPeriod)}
+                      disabled={!selectedPeriod || calculating || !draftPeriods.some((p) => p.id === selectedPeriod)}
+                    >
+                      {calculating ? (
+                        "جاري الحساب..."
+                      ) : (
+                        <>
+                          <Play className="mr-2 h-4 w-4" />
+                          بدء الحساب
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    سيتم حساب رواتب جميع الموظفين النشطين في الفترة المحددة
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
