@@ -51,3 +51,6 @@ uploads/
 
 # dist
 dist/
+
+# real source data (NEVER commit)
+_REAL_DATA/

@@ -307,8 +307,9 @@ export async function processAttendanceImport(
   }
 
   for (const [identifier, records] of groupedByEmployee) {
-    // Try to find employee by employeeCode or fingerprintId
-    const employee = await db.employee.findFirst({
+    // Try to find employee by employeeCode, fingerprintId, or name
+    const employeeName = ((records[0]?.rawRow as Record<string, any>)?._employeeName) || "";
+    let employee = await db.employee.findFirst({
       where: {
         OR: [
           { employeeCode: identifier },
@@ -318,8 +319,45 @@ export async function processAttendanceImport(
       },
     });
 
+    // Fallback: try matching by employee name if ID matching failed
+    if (!employee && employeeName) {
+      const nameParts = employeeName.toLowerCase().split(/\s+/).filter(Boolean);
+      if (nameParts.length >= 2) {
+        // Try first + last name match for better accuracy
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
+        employee = await db.employee.findFirst({
+          where: {
+            AND: [
+              {
+                OR: [
+                  { firstName: { contains: firstName, mode: "insensitive" } },
+                  { displayName: { contains: firstName, mode: "insensitive" } },
+                ],
+              },
+              {
+                OR: [
+                  { lastName: { contains: lastName, mode: "insensitive" } },
+                  { displayName: { contains: lastName, mode: "insensitive" } },
+                ],
+              },
+            ],
+            employmentStatus: "ACTIVE",
+          },
+        });
+      }
+      // Last resort: exact displayName match
+      if (!employee) {
+        employee = await db.employee.findFirst({
+          where: {
+            displayName: { equals: employeeName, mode: "insensitive" },
+            employmentStatus: "ACTIVE",
+          },
+        });
+      }
+    }
+
     if (!employee) {
-      // Mark all records for this identifier as UNMATCHED
       for (const record of records) {
         await db.attendanceRawRecord.update({
           where: { id: record.id },
