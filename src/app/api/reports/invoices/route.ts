@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { INVOICE_STATUS_LABELS } from "@/lib/constants";
+import { formatDate } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,7 +61,21 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return NextResponse.json({ summary, invoices });
+    const items = invoices.map((inv: any) => {
+      const paid = inv.payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
+      return {
+        invoiceNumber: inv.invoiceNumber,
+        clientName: inv.client?.name ?? "-",
+        date: formatDate(inv.date),
+        dueDate: formatDate(inv.dueDate),
+        total: Number(inv.total),
+        paid,
+        outstanding: Number(inv.total) - paid,
+        status: INVOICE_STATUS_LABELS[inv.status] || inv.status,
+      };
+    });
+
+    return NextResponse.json({ summary, items });
   } catch (error) {
     console.error("GET /api/reports/invoices error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

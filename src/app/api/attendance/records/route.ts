@@ -38,7 +38,12 @@ export async function GET(request: NextRequest) {
 
     const where: any = { employee: { companyId } };
     if (employeeId) where.employeeId = employeeId;
-    if (status) where.status = status;
+    // "LATE" is not a stored AttendanceStatus value — lateness is tracked via lateMinutes.
+    if (status === "LATE") {
+      where.lateMinutes = { gt: 0 };
+    } else if (status) {
+      where.status = status;
+    }
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(startDate);

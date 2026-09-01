@@ -50,6 +50,12 @@ import {
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
+interface Branch {
+  id: string;
+  name: string;
+  nameAr?: string;
+}
+
 interface Employee {
   id: string;
   employeeCode: string;
@@ -84,18 +90,27 @@ export default function EmployeesPage() {
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [showAddDialog, setShowAddDialog] = React.useState(false);
+  const [branches, setBranches] = React.useState<Branch[]>([]);
   const [addForm, setAddForm] = React.useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     jobTitle: "",
+    branchId: "",
   });
   const [adding, setAdding] = React.useState(false);
 
   React.useEffect(() => {
     fetchEmployees();
   }, [pagination.page, statusFilter, search]);
+
+  React.useEffect(() => {
+    fetch("/api/admin/branches")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setBranches(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
   async function fetchEmployees() {
     setLoading(true);
@@ -131,12 +146,18 @@ export default function EmployeesPage() {
       const res = await fetch("/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(addForm),
+        body: JSON.stringify({
+          ...addForm,
+          branchId: addForm.branchId || undefined,
+          email: addForm.email || undefined,
+          displayName: `${addForm.firstName} ${addForm.lastName}`.trim(),
+          joinDate: new Date().toISOString(),
+        }),
       });
       if (res.ok) {
         toast({ title: "تم إضافة الموظف بنجاح" });
         setShowAddDialog(false);
-        setAddForm({ firstName: "", lastName: "", email: "", phone: "", jobTitle: "" });
+        setAddForm({ firstName: "", lastName: "", email: "", phone: "", jobTitle: "", branchId: "" });
         fetchEmployees();
       } else {
         const data = await res.json();
@@ -397,6 +418,22 @@ export default function EmployeesPage() {
                   onChange={(e) => setAddForm((prev) => ({ ...prev, jobTitle: e.target.value }))}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="branchId">الفرع</Label>
+              <Select
+                value={addForm.branchId}
+                onValueChange={(value) => setAddForm((prev) => ({ ...prev, branchId: value }))}
+              >
+                <SelectTrigger id="branchId">
+                  <SelectValue placeholder="اختر الفرع" />
+                </SelectTrigger>
+                <SelectContent>
+                  {branches.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.nameAr || b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>

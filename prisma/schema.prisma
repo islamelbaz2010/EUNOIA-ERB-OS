@@ -198,6 +198,7 @@ model Branch {
   city      String?
   phone     String?
   isDefault Boolean @default(false)
+  isActive  Boolean @default(true)
 
   employees Employee[]
 

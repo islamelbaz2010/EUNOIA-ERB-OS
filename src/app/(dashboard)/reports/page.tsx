@@ -113,6 +113,7 @@ const reportItemLabels: Record<string, string> = {
   totalAdditions: "الإضافات",
   totalDeductions: "الخصومات",
   overtime: "العمل الإضافي",
+  overtimeMinutes: "العمل الإضافي (دقيقة)",
   gross: "الإجمالي",
   net: "الصافي",
   status: "الحالة",
@@ -120,12 +121,20 @@ const reportItemLabels: Record<string, string> = {
   invoiceNumber: "رقم الفاتورة",
   clientName: "العميل",
   total: "الإجمالي",
+  paid: "المدفوع",
+  outstanding: "المتبقي",
   amount: "المبلغ",
   paymentDate: "التاريخ",
   method: "الطريقة",
+  reference: "المرجع",
   date: "التاريخ",
+  dueDate: "تاريخ الاستحقاق",
   workMinutes: "ساعات العمل",
-  lateMinutes: "التأخير",
+  workHours: "ساعات العمل",
+  lateMinutes: "التأخير (دقيقة)",
+  presentDays: "أيام الحضور",
+  absentDays: "أيام الغياب",
+  leaveDays: "أيام الإجازة",
 };
 
 const summaryLabels: Record<string, string> = {
@@ -163,8 +172,8 @@ export default function ReportsPage() {
     setSelectedReport(reportId);
     try {
       const params = new URLSearchParams();
-      if (dateFrom) params.set("dateFrom", dateFrom);
-      if (dateTo) params.set("dateTo", dateTo);
+      if (dateFrom) params.set("startDate", dateFrom);
+      if (dateTo) params.set("endDate", dateTo);
 
       const res = await fetch(`/api/reports/${reportId}?${params}`);
       if (res.ok) {

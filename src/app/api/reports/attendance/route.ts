@@ -83,23 +83,34 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const summary = Object.values(employeeMap);
-    const totalPresent = summary.reduce((sum, e) => sum + e.presentDays, 0);
-    const totalAbsent = summary.reduce((sum, e) => sum + e.absentDays, 0);
-    const totalLate = summary.reduce((sum, e) => sum + e.totalLateMinutes, 0);
-    const totalOvertime = summary.reduce((sum, e) => sum + e.totalOvertimeMinutes, 0);
+    const summaryRows = Object.values(employeeMap);
+    const totalPresent = summaryRows.reduce((sum, e) => sum + e.presentDays, 0);
+    const totalAbsent = summaryRows.reduce((sum, e) => sum + e.absentDays, 0);
+    const totalLate = summaryRows.reduce((sum, e) => sum + e.totalLateMinutes, 0);
+    const totalOvertime = summaryRows.reduce((sum, e) => sum + e.totalOvertimeMinutes, 0);
+
+    const items = summaryRows.map((e: any) => ({
+      employeeCode: e.employee?.employeeCode ?? "-",
+      displayName: e.employee ? `${e.employee.firstName} ${e.employee.lastName}` : "-",
+      presentDays: e.presentDays,
+      absentDays: e.absentDays,
+      leaveDays: e.leaveDays,
+      lateMinutes: e.totalLateMinutes,
+      overtimeMinutes: e.totalOvertimeMinutes,
+      workHours: Math.round((e.totalWorkMinutes / 60) * 10) / 10,
+    }));
 
     return NextResponse.json({
       summary: {
-        totalEmployees: summary.length,
+        totalEmployees: summaryRows.length,
         totalPresent,
         totalAbsent,
         totalLate,
         totalOvertime,
         averageAttendance:
-          summary.length > 0 ? ((totalPresent / (summary.length * (summary[0]?.totalDays || 1))) * 100).toFixed(1) : 0,
+          summaryRows.length > 0 ? ((totalPresent / (summaryRows.length * (summaryRows[0]?.totalDays || 1))) * 100).toFixed(1) : 0,
       },
-      details: summary,
+      items,
     });
   } catch (error) {
     console.error("GET /api/reports/attendance error:", error);

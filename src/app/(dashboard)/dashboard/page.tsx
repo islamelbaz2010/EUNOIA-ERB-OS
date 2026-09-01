@@ -116,7 +116,7 @@ export default function DashboardPage() {
       icon: FileWarning,
       color: "text-warning",
       bgColor: "bg-warning/10",
-      href: "/attendance?tab=exceptions",
+      href: "/attendance?tab=exceptions&status=PENDING",
     },
     {
       title: "فواتير معلقة",
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       icon: Receipt,
       color: "text-primary",
       bgColor: "bg-primary/10",
-      href: "/invoices?status=PENDING",
+      href: "/invoices?status=OUTSTANDING",
     },
     {
       title: "فواتير متأخرة",

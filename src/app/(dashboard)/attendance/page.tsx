@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Upload,
   Search,
@@ -33,6 +34,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { IMPORT_STATUS_LABELS, APPROVAL_STATUS_LABELS, EXCEPTION_TYPE_LABELS } from "@/lib/constants";
 
 interface AttendanceRecord {
   id: string;
@@ -65,14 +67,20 @@ interface Exception {
 }
 
 export default function AttendancePage() {
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") === "exceptions" ? "exceptions" : "records";
+  const queryStatus = searchParams.get("status") || "all";
+  const initialRecordStatus = initialTab === "records" ? queryStatus : "all";
+  const initialExceptionStatus = initialTab === "exceptions" ? queryStatus : "all";
+
   const [records, setRecords] = React.useState<AttendanceRecord[]>([]);
   const [imports, setImports] = React.useState<ImportRecord[]>([]);
   const [exceptions, setExceptions] = React.useState<Exception[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [dateFrom, setDateFrom] = React.useState("");
   const [dateTo, setDateTo] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("all");
-  const [exceptionStatus, setExceptionStatus] = React.useState("all");
+  const [statusFilter, setStatusFilter] = React.useState(initialRecordStatus);
+  const [exceptionStatus, setExceptionStatus] = React.useState(initialExceptionStatus);
 
   React.useEffect(() => {
     fetchAttendanceData();
@@ -189,7 +197,7 @@ export default function AttendancePage() {
         <p className="text-muted-foreground">إدارة سجلات الحضور والاستثناءات</p>
       </div>
 
-      <Tabs defaultValue="records">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           <TabsTrigger value="records">
             <Clock className="mr-2 h-4 w-4" />
@@ -343,7 +351,7 @@ export default function AttendancePage() {
                           <TableCell className="font-medium">{imp.fileName}</TableCell>
                           <TableCell>
                             <Badge variant={imp.status === "COMPLETED" ? "success" : imp.status === "FAILED" ? "destructive" : "default"}>
-                              {imp.status}
+                              {IMPORT_STATUS_LABELS[imp.status] || imp.status}
                             </Badge>
                           </TableCell>
                           <TableCell>{imp.totalRows}</TableCell>
@@ -413,11 +421,11 @@ export default function AttendancePage() {
                       <TableRow key={exc.id}>
                         <TableCell>{exc.employee.displayName}</TableCell>
                         <TableCell>{formatDate(exc.date)}</TableCell>
-                        <TableCell><Badge variant="outline">{exc.type}</Badge></TableCell>
+                        <TableCell><Badge variant="outline">{EXCEPTION_TYPE_LABELS[exc.type] || exc.type}</Badge></TableCell>
                         <TableCell className="max-w-[200px] truncate">{exc.reason}</TableCell>
                         <TableCell>
                           <Badge variant={exc.status === "APPROVED" ? "success" : exc.status === "REJECTED" ? "destructive" : "warning"}>
-                            {exc.status}
+                            {APPROVAL_STATUS_LABELS[exc.status] || exc.status}
                           </Badge>
                         </TableCell>
                         <TableCell>

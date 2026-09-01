@@ -39,7 +39,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { EGYPT_GOVERNORATES, DEFAULT_COUNTRY } from "@/lib/constants";
 
 interface Client {
   id: string;
@@ -79,6 +87,8 @@ export default function ClientsPage() {
     email: "",
     address: "",
     city: "",
+    country: DEFAULT_COUNTRY,
+    governorate: "",
     taxNumber: "",
   });
   const [adding, setAdding] = React.useState(false);
@@ -125,7 +135,7 @@ export default function ClientsPage() {
       if (res.ok) {
         toast({ title: "تم إضافة العميل بنجاح" });
         setShowAddDialog(false);
-        setAddForm({ name: "", nameAr: "", contactPerson: "", phone: "", email: "", address: "", city: "", taxNumber: "" });
+        setAddForm({ name: "", nameAr: "", contactPerson: "", phone: "", email: "", address: "", city: "", country: DEFAULT_COUNTRY, governorate: "", taxNumber: "" });
         fetchClients();
       } else {
         const data = await res.json();
@@ -214,7 +224,7 @@ export default function ClientsPage() {
                     <TableCell>{client._count?.invoices || 0}</TableCell>
                     <TableCell>
                       <Badge variant={client.status === "ACTIVE" ? "success" : "default"}>
-                        {client.status === "ACTIVE" ? "نشط" : client.status}
+                        {client.status === "ACTIVE" ? "نشط" : client.status === "BLOCKED" ? "محظور" : "غير نشط"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -329,20 +339,36 @@ export default function ClientsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label>المحافظة</Label>
+                <Select
+                  value={addForm.governorate}
+                  onValueChange={(value) => setAddForm((prev) => ({ ...prev, governorate: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر المحافظة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EGYPT_GOVERNORATES.map((g) => (
+                      <SelectItem key={g} value={g}>{g}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label>المدينة</Label>
                 <Input
                   value={addForm.city}
                   onChange={(e) => setAddForm((prev) => ({ ...prev, city: e.target.value }))}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>الرقم الضريبي</Label>
-                <Input
-                  value={addForm.taxNumber}
-                  onChange={(e) => setAddForm((prev) => ({ ...prev, taxNumber: e.target.value }))}
-                  dir="ltr"
-                />
-              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>الرقم الضريبي</Label>
+              <Input
+                value={addForm.taxNumber}
+                onChange={(e) => setAddForm((prev) => ({ ...prev, taxNumber: e.target.value }))}
+                dir="ltr"
+              />
             </div>
             <div className="space-y-2">
               <Label>العنوان</Label>

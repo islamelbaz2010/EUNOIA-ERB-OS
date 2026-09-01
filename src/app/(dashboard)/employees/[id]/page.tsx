@@ -48,6 +48,17 @@ import {
 } from "@/components/ui/dialog";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import {
+  EGYPT_GOVERNORATES,
+  DEFAULT_COUNTRY,
+  EMPLOYMENT_STATUS_LABELS,
+  GENDER_LABELS,
+  MARITAL_STATUS_LABELS,
+  SALARY_COMPONENT_TYPE_LABELS,
+  ATTENDANCE_STATUS_LABELS,
+  LEAVE_STATUS_LABELS,
+  PAYROLL_RECORD_STATUS_LABELS,
+} from "@/lib/constants";
 
 interface Employee {
   id: string;
@@ -139,18 +150,10 @@ export default function EmployeeDetailPage() {
   const [profileForm, setProfileForm] = React.useState<Record<string, any>>({});
   const [salaryFormOpen, setSalaryFormOpen] = React.useState(false);
   const [salaryForm, setSalaryForm] = React.useState({ baseSalary: 0, overtimeRate: 0, hourlyRate: 0, currency: "EGP" });
+  const [branches, setBranches] = React.useState<{ id: string; name: string; nameAr?: string }[]>([]);
+  const [departments, setDepartments] = React.useState<{ id: string; name: string; nameAr?: string }[]>([]);
 
-  const componentTypeLabels: Record<string, string> = {
-    ALLOWANCE: "بدل",
-    DEDUCTION: "خصم",
-    BONUS: "مكافأة",
-    OVERTIME: "عمل إضافي",
-    COMMISSION: "عمولة",
-    ADVANCE: "سلفة",
-    PENALTY: "غرامة",
-    REIMBURSEMENT: "تعويض",
-    MANUAL: "يدوي",
-  };
+  const componentTypeLabels = SALARY_COMPONENT_TYPE_LABELS;
 
   const [componentDialogOpen, setComponentDialogOpen] = React.useState(false);
   const [editingComponent, setEditingComponent] = React.useState<SalaryComponent | null>(null);
@@ -165,7 +168,21 @@ export default function EmployeeDetailPage() {
 
   React.useEffect(() => {
     fetchEmployee();
+    fetchLookups();
   }, [employeeId]);
+
+  async function fetchLookups() {
+    try {
+      const [branchesRes, departmentsRes] = await Promise.all([
+        fetch("/api/admin/branches"),
+        fetch("/api/departments"),
+      ]);
+      if (branchesRes.ok) setBranches(await branchesRes.json());
+      if (departmentsRes.ok) setDepartments(await departmentsRes.json());
+    } catch (error) {
+      console.error("Failed to fetch lookups:", error);
+    }
+  }
 
   async function fetchEmployee() {
     try {
@@ -188,8 +205,11 @@ export default function EmployeeDetailPage() {
           city: data.city || "",
           jobTitle: data.jobTitle || "",
           displayName: data.displayName || "",
-          country: data.country || "",
+          country: data.country || DEFAULT_COUNTRY,
           governorate: data.governorate || "",
+          branchId: data.branchId || data.branch?.id || "",
+          departmentId: data.departmentId || data.department?.id || "",
+          employmentStatus: data.employmentStatus || "ACTIVE",
         });
       }
     } catch (error) {
@@ -284,34 +304,41 @@ export default function EmployeeDetailPage() {
     const profile = employee?.salaryProfiles[0];
     if (!profile) return;
 
-    if (!componentForm.name || componentForm.amount <= 0) {
+    if (!componentForm.nameAr || componentForm.amount <= 0) {
       toast({ title: "خطأ", description: "أدخل الاسم والمبلغ", variant: "destructive" });
       return;
     }
 
+    const internalName = componentForm.name || componentForm.nameAr;
+
     setSaving(true);
     try {
-      if (editingComponent) {
-        const res = await fetch(`/api/salary-components/${editingComponent.id}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) throw new Error("Failed to delete");
-      }
-
-      const res = await fetch("/api/salary-components", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          salaryProfileId: profile.id,
-          type: componentForm.type,
-          name: componentForm.name,
-          nameAr: componentForm.nameAr || undefined,
-          amount: componentForm.amount,
-          isPercentage: componentForm.isPercentage,
-          isRecurring: componentForm.isRecurring,
-        }),
-      });
+      const res = editingComponent
+        ? await fetch(`/api/salary-components/${editingComponent.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: componentForm.type,
+              name: internalName,
+              nameAr: componentForm.nameAr,
+              amount: componentForm.amount,
+              isPercentage: componentForm.isPercentage,
+              isRecurring: componentForm.isRecurring,
+            }),
+          })
+        : await fetch("/api/salary-components", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              salaryProfileId: profile.id,
+              type: componentForm.type,
+              name: internalName,
+              nameAr: componentForm.nameAr,
+              amount: componentForm.amount,
+              isPercentage: componentForm.isPercentage,
+              isRecurring: componentForm.isRecurring,
+            }),
+          });
       if (res.ok) {
         toast({ title: editingComponent ? "تم تعديل البند" : "تم إضافة البند" });
         setComponentDialogOpen(false);
@@ -534,6 +561,54 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label>الفرع</Label>
+                  <Select
+                    value={profileForm.branchId || ""}
+                    onValueChange={(value) => setProfileForm((prev) => ({ ...prev, branchId: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر الفرع" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>{b.nameAr || b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>القسم</Label>
+                  <Select
+                    value={profileForm.departmentId || ""}
+                    onValueChange={(value) => setProfileForm((prev) => ({ ...prev, departmentId: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر القسم" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>{d.nameAr || d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>حالة التوظيف</Label>
+                  <Select
+                    value={profileForm.employmentStatus || "ACTIVE"}
+                    onValueChange={(value) => setProfileForm((prev) => ({ ...prev, employmentStatus: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(EMPLOYMENT_STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label>المدينة</Label>
                   <Input
                     value={profileForm.city}
@@ -548,11 +623,20 @@ export default function EmployeeDetailPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>المنطقة</Label>
-                  <Input
-                    value={profileForm.governorate}
-                    onChange={(e) => setProfileForm((prev) => ({ ...prev, governorate: e.target.value }))}
-                  />
+                  <Label>المحافظة</Label>
+                  <Select
+                    value={profileForm.governorate || ""}
+                    onValueChange={(value) => setProfileForm((prev) => ({ ...prev, governorate: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر المحافظة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EGYPT_GOVERNORATES.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
@@ -743,19 +827,20 @@ export default function EmployeeDetailPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>الاسم (إنجليزي) *</Label>
-                  <Input
-                    value={componentForm.name}
-                    onChange={(e) => setComponentForm((prev) => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g. Housing Allowance"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>الاسم (عربي)</Label>
+                  <Label>اسم البند *</Label>
                   <Input
                     value={componentForm.nameAr}
                     onChange={(e) => setComponentForm((prev) => ({ ...prev, nameAr: e.target.value }))}
                     placeholder="مثال: بدل سكن"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>الاسم الداخلي (إنجليزي - اختياري)</Label>
+                  <Input
+                    value={componentForm.name}
+                    onChange={(e) => setComponentForm((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Housing Allowance"
+                    dir="ltr"
                   />
                 </div>
                 <div className="space-y-2">
@@ -851,7 +936,7 @@ export default function EmployeeDetailPage() {
                         <TableCell>{formatDate(day.date)}</TableCell>
                         <TableCell>
                           <Badge variant={day.status === "PRESENT" ? "success" : day.status === "ABSENT" ? "destructive" : "default"}>
-                            {day.status}
+                            {ATTENDANCE_STATUS_LABELS[day.status] || day.status}
                           </Badge>
                         </TableCell>
                         <TableCell>{Math.round(day.workMinutes / 60 * 10) / 10}h</TableCell>
@@ -893,7 +978,7 @@ export default function EmployeeDetailPage() {
                         <TableCell>{leave.totalDays}</TableCell>
                         <TableCell>
                           <Badge variant={leave.status === "APPROVED" ? "success" : leave.status === "REJECTED" ? "destructive" : "default"}>
-                            {leave.status}
+                            {LEAVE_STATUS_LABELS[leave.status] || leave.status}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -931,7 +1016,7 @@ export default function EmployeeDetailPage() {
                         <TableCell>{formatCurrency(Number(record.net))}</TableCell>
                         <TableCell>
                           <Badge variant={record.status === "PAID" ? "success" : "default"}>
-                            {record.status}
+                            {PAYROLL_RECORD_STATUS_LABELS[record.status] || record.status}
                           </Badge>
                         </TableCell>
                       </TableRow>

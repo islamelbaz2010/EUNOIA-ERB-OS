@@ -51,7 +51,11 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate") || undefined;
 
     const where: any = { companyId };
-    if (status) where.status = status;
+    if (status === "OUTSTANDING") {
+      where.status = { in: ["SENT", "VIEWED", "PARTIALLY_PAID", "OVERDUE"] };
+    } else if (status) {
+      where.status = status;
+    }
     if (clientId) where.clientId = clientId;
     if (startDate || endDate) {
       where.date = {};

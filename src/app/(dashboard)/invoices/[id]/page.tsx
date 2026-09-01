@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -240,7 +241,7 @@ export default function InvoiceDetailPage() {
                       <TableRow key={payment.id}>
                         <TableCell>{formatDate(payment.paymentDate)}</TableCell>
                         <TableCell>{formatCurrency(Number(payment.amount))}</TableCell>
-                        <TableCell><Badge variant="outline">{payment.method}</Badge></TableCell>
+                        <TableCell><Badge variant="outline">{PAYMENT_METHOD_LABELS[payment.method] || payment.method}</Badge></TableCell>
                         <TableCell>{payment.reference || "-"}</TableCell>
                       </TableRow>
                     ))}

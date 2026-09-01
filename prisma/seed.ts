@@ -20,7 +20,7 @@ async function main() {
       phone: "+201000000000",
       address: "Cairo, Egypt",
       city: "Cairo",
-      country: "Egypt",
+      country: "مصر",
       taxNumber: "1234567890",
       vatNumber: "123456789012345",
       vatRate: 14,
@@ -58,6 +58,7 @@ async function main() {
       city: "Cairo",
       phone: "+201000000000",
       isDefault: true,
+      isActive: true,
     },
   });
   console.log("Branch created:", branch.name);
@@ -66,7 +67,7 @@ async function main() {
     data: {
       companyId: company.id,
       name: "Standard Working Hours",
-      nameAr: "ساعات العمل",
+      nameAr: "ساعات العمل القياسية",
       isDefault: true,
       sunday: true,
       monday: true,
@@ -111,6 +112,8 @@ async function main() {
         jobTitle: emp.jobTitle,
         gender: i % 2 === 0 ? "MALE" : "FEMALE",
         employmentStatus: "ACTIVE",
+        country: "مصر",
+        governorate: "القاهرة",
       },
     });
 
@@ -176,7 +179,8 @@ async function main() {
         phone: "+20102000000",
         email: "omar@techcorp.eg",
         city: "Cairo",
-        country: "Egypt",
+        country: "مصر",
+        governorate: "القاهرة",
         paymentTerms: 30,
       },
     }),
@@ -188,7 +192,8 @@ async function main() {
         phone: "+20103000000",
         email: "layla@greenvalley.eg",
         city: "Alexandria",
-        country: "Egypt",
+        country: "مصر",
+        governorate: "الإسكندرية",
         paymentTerms: 15,
       },
     }),

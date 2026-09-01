@@ -153,6 +153,9 @@ function toast({ ...props }: Toast) {
     } as ToasterToast,
   });
 
+  // Auto-dismiss after TOAST_REMOVE_DELAY so toasts don't pile up on screen.
+  addToRemoveQueue(id);
+
   return {
     id: id,
     dismiss,

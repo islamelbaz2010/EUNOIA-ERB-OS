@@ -107,7 +107,8 @@ export default function PayrollPage() {
         fetchPayrollData();
         fetchRecords(periodId);
       } else {
-        toast({ title: "خطأ", description: "فشل في الحساب", variant: "destructive" });
+        const errorData = await res.json().catch(() => ({}));
+        toast({ title: "خطأ", description: errorData.error || "فشل في الحساب", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "خطأ", variant: "destructive" });

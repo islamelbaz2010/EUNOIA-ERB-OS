@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         phone: "+201000000000",
         address: "Cairo, Egypt",
         city: "Cairo",
-        country: "Egypt",
+        country: "مصر",
         taxNumber: "1234567890",
         vatNumber: "123456789012345",
         vatRate: 14,
@@ -50,12 +50,13 @@ export async function POST(request: NextRequest) {
     const branch = await db.branch.create({
       data: {
         companyId: company.id,
-        name: "Riyadh HQ",
-        nameAr: "المقر الرئيسي - الرياض",
+        name: "Cairo HQ",
+        nameAr: "المقر الرئيسي - القاهرة",
         address: "123 Business Street",
-        city: "Riyadh",
-        phone: "+966500000000",
+        city: "Cairo",
+        phone: "+201000000000",
         isDefault: true,
+        isActive: true,
       },
     });
 
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
       data: {
         companyId: company.id,
         name: "Standard Working Hours",
-        nameAr: "ساعات العمل标准",
+        nameAr: "ساعات العمل القياسية",
         isDefault: true,
         sunday: true,
         monday: true,
@@ -101,12 +102,15 @@ export async function POST(request: NextRequest) {
           firstName: emp.firstName,
           lastName: emp.lastName,
           displayName: `${emp.firstName} ${emp.lastName}`,
-          phone: `+96650${String(1000000 + i).padStart(7, "0")}`,
+          phone: `+201${String(1000000 + i).padStart(7, "0")}`,
           email: `${emp.firstName.toLowerCase()}.${emp.lastName.toLowerCase()}@eunoia.com`,
           joinDate: new Date("2024-01-15"),
           jobTitle: emp.jobTitle,
           gender: i % 2 === 0 ? "MALE" : "FEMALE",
           employmentStatus: "ACTIVE",
+          country: "مصر",
+          governorate: "القاهرة",
+          city: "Cairo",
         },
       });
 
@@ -156,20 +160,21 @@ export async function POST(request: NextRequest) {
     ]);
 
     const holidays = await Promise.all([
-      db.holiday.create({ data: { companyId: company.id, name: "Saudi National Day", nameAr: "اليوم الوطني السعودي", date: new Date("2024-09-23"), isRecurring: true } }),
-      db.holiday.create({ data: { companyId: company.id, name: "Founding Day", nameAr: "يوم التأسيس", date: new Date("2024-02-22"), isRecurring: true } }),
+      db.holiday.create({ data: { companyId: company.id, name: "Egyptian National Day", nameAr: "اليوم الوطني المصري", date: new Date("2024-07-23"), isRecurring: true } }),
+      db.holiday.create({ data: { companyId: company.id, name: "Sinai Liberation Day", nameAr: "عيد تحرير سيناء", date: new Date("2024-04-25"), isRecurring: true } }),
     ]);
 
     const clients = await Promise.all([
       db.client.create({
         data: {
           companyId: company.id,
-          name: "TechCorp Saudi",
+          name: "TechCorp Egypt",
           contactPerson: "Omar Abdullah",
-          phone: "+966511111111",
-          email: "omar@techcorp.sa",
-          city: "Riyadh",
-          country: "Saudi Arabia",
+          phone: "+201111111111",
+          email: "omar@techcorp.eg",
+          city: "Cairo",
+          country: "مصر",
+          governorate: "القاهرة",
           paymentTerms: 30,
         },
       }),
@@ -178,10 +183,11 @@ export async function POST(request: NextRequest) {
           companyId: company.id,
           name: "Green Valley Trading",
           contactPerson: "Layla Mansour",
-          phone: "+966522222222",
-          email: "layla@greenvalley.sa",
-          city: "Jeddah",
-          country: "Saudi Arabia",
+          phone: "+201222222222",
+          email: "layla@greenvalley.eg",
+          city: "Alexandria",
+          country: "مصر",
+          governorate: "الإسكندرية",
           paymentTerms: 15,
         },
       }),

@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   Building2,
+  MapPin,
   Clock,
   Calendar,
   Tag,
@@ -12,6 +13,8 @@ import {
   Save,
   Plus,
   Trash2,
+  Pencil,
+  Power,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,18 +99,40 @@ interface AuditLog {
   createdAt: string;
 }
 
+interface Branch {
+  id: string;
+  name: string;
+  nameAr?: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  isDefault: boolean;
+  isActive: boolean;
+}
+
 export default function AdminPage() {
   const [company, setCompany] = React.useState<Company | null>(null);
   const [schedules, setSchedules] = React.useState<WorkSchedule[]>([]);
   const [holidays, setHolidays] = React.useState<Holiday[]>([]);
   const [leaveTypes, setLeaveTypes] = React.useState<LeaveType[]>([]);
   const [auditLogs, setAuditLogs] = React.useState<AuditLog[]>([]);
+  const [branches, setBranches] = React.useState<Branch[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
 
   const [showScheduleDialog, setShowScheduleDialog] = React.useState(false);
   const [showHolidayDialog, setShowHolidayDialog] = React.useState(false);
   const [showLeaveTypeDialog, setShowLeaveTypeDialog] = React.useState(false);
+  const [showBranchDialog, setShowBranchDialog] = React.useState(false);
+  const [editingBranch, setEditingBranch] = React.useState<Branch | null>(null);
+  const [branchForm, setBranchForm] = React.useState({
+    name: "",
+    nameAr: "",
+    address: "",
+    city: "",
+    phone: "",
+    isDefault: false,
+  });
 
   const [scheduleForm, setScheduleForm] = React.useState({
     name: "",
@@ -143,12 +168,13 @@ export default function AdminPage() {
   async function fetchAdminData() {
     setLoading(true);
     try {
-      const [companyRes, schedulesRes, holidaysRes, leaveTypesRes, auditRes] = await Promise.all([
+      const [companyRes, schedulesRes, holidaysRes, leaveTypesRes, auditRes, branchesRes] = await Promise.all([
         fetch("/api/admin/settings"),
         fetch("/api/admin/work-schedules"),
         fetch("/api/admin/holidays"),
         fetch("/api/admin/leave-types"),
         fetch("/api/admin/audit-log"),
+        fetch("/api/admin/branches"),
       ]);
 
       if (companyRes.ok) setCompany(await companyRes.json());
@@ -167,6 +193,10 @@ export default function AdminPage() {
       if (auditRes.ok) {
         const data = await auditRes.json();
         setAuditLogs(data.logs || data.items || []);
+      }
+      if (branchesRes.ok) {
+        const data = await branchesRes.json();
+        setBranches(Array.isArray(data) ? data : data.branches || data.items || []);
       }
     } catch (error) {
       console.error("Failed to fetch admin data:", error);
@@ -266,6 +296,65 @@ export default function AdminPage() {
     }
   }
 
+  function openAddBranchDialog() {
+    setEditingBranch(null);
+    setBranchForm({ name: "", nameAr: "", address: "", city: "", phone: "", isDefault: false });
+    setShowBranchDialog(true);
+  }
+
+  function openEditBranchDialog(branch: Branch) {
+    setEditingBranch(branch);
+    setBranchForm({
+      name: branch.name,
+      nameAr: branch.nameAr || "",
+      address: branch.address || "",
+      city: branch.city || "",
+      phone: branch.phone || "",
+      isDefault: branch.isDefault,
+    });
+    setShowBranchDialog(true);
+  }
+
+  async function handleSaveBranch(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const res = await fetch(
+        editingBranch ? `/api/admin/branches/${editingBranch.id}` : "/api/admin/branches",
+        {
+          method: editingBranch ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(branchForm),
+        }
+      );
+      if (res.ok) {
+        toast({ title: editingBranch ? "تم تعديل الفرع بنجاح" : "تمت إضافة الفرع بنجاح" });
+        setShowBranchDialog(false);
+        fetchAdminData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast({ title: "خطأ", description: data.error || "فشل في حفظ الفرع", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "خطأ", description: "فشل في حفظ الفرع", variant: "destructive" });
+    }
+  }
+
+  async function handleToggleBranchActive(branch: Branch) {
+    try {
+      const res = await fetch(`/api/admin/branches/${branch.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !branch.isActive }),
+      });
+      if (res.ok) {
+        toast({ title: branch.isActive ? "تم تعطيل الفرع" : "تم تفعيل الفرع" });
+        fetchAdminData();
+      }
+    } catch (error) {
+      toast({ title: "خطأ", variant: "destructive" });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -278,6 +367,10 @@ export default function AdminPage() {
           <TabsTrigger value="company">
             <Building2 className="mr-2 h-4 w-4" />
             الشركة
+          </TabsTrigger>
+          <TabsTrigger value="branches">
+            <MapPin className="mr-2 h-4 w-4" />
+            الفروع
           </TabsTrigger>
           <TabsTrigger value="schedules">
             <Clock className="mr-2 h-4 w-4" />
@@ -400,6 +493,72 @@ export default function AdminPage() {
                   </div>
                 </>
               ) : null}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="branches" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>الفروع</CardTitle>
+              <Button onClick={openAddBranchDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                إضافة فرع
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>الاسم</TableHead>
+                    <TableHead>المدينة</TableHead>
+                    <TableHead>الهاتف</TableHead>
+                    <TableHead>افتراضي</TableHead>
+                    <TableHead>الحالة</TableHead>
+                    <TableHead className="text-left">الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {branches.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        لا توجد فروع
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    branches.map((branch) => (
+                      <TableRow key={branch.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{branch.nameAr || branch.name}</p>
+                            {branch.city && <p className="text-xs text-muted-foreground">{branch.city}</p>}
+                          </div>
+                        </TableCell>
+                        <TableCell>{branch.city || "-"}</TableCell>
+                        <TableCell dir="ltr">{branch.phone || "-"}</TableCell>
+                        <TableCell>
+                          {branch.isDefault && <Badge variant="success">افتراضي</Badge>}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={branch.isActive ? "success" : "destructive"}>
+                            {branch.isActive ? "نشط" : "غير نشط"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditBranchDialog(branch)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleToggleBranchActive(branch)}>
+                              <Power className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -618,6 +777,72 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showBranchDialog} onOpenChange={setShowBranchDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingBranch ? "تعديل الفرع" : "إضافة فرع جديد"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveBranch} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>الاسم (عربي)</Label>
+                <Input
+                  value={branchForm.nameAr}
+                  onChange={(e) => setBranchForm((prev) => ({ ...prev, nameAr: e.target.value }))}
+                  placeholder="المقر الرئيسي - القاهرة"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>الاسم (إنجليزي)</Label>
+                <Input
+                  value={branchForm.name}
+                  onChange={(e) => setBranchForm((prev) => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>المدينة</Label>
+                <Input
+                  value={branchForm.city}
+                  onChange={(e) => setBranchForm((prev) => ({ ...prev, city: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>الهاتف</Label>
+                <Input
+                  value={branchForm.phone}
+                  onChange={(e) => setBranchForm((prev) => ({ ...prev, phone: e.target.value }))}
+                  dir="ltr"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>العنوان</Label>
+              <Input
+                value={branchForm.address}
+                onChange={(e) => setBranchForm((prev) => ({ ...prev, address: e.target.value }))}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={branchForm.isDefault}
+                onCheckedChange={(checked) => setBranchForm((prev) => ({ ...prev, isDefault: checked }))}
+              />
+              <Label>فرع افتراضي</Label>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowBranchDialog(false)}>
+                إلغاء
+              </Button>
+              <Button type="submit">{editingBranch ? "حفظ" : "إضافة"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
         <DialogContent>

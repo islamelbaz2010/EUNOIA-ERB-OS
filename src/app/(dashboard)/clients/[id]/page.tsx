@@ -34,14 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const EGYPT_GOVERNORATES = [
-  "القاهرة", "الإسكندرية", "الإسماعيلية", "الجيزة", "قليوبية",
-  "البحيرة", "الدقهلية", "الشرقية", "كفر الشيخ", "الغربية",
-  "المنوفية", "الفيوم", "بني سويف", "المنيا", "أسيوط",
-  "سوهاج", "قنا", "الأقصر", "أسوان", "البحر الأحمر",
-  "الوادي الجديد", "مطروح", "شمال سيناء", "جنوب سيناء", "بورسعيد", " السويس",
-];
+import { EGYPT_GOVERNORATES, DEFAULT_COUNTRY, INVOICE_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
 
 interface Client {
   id: string;
@@ -99,7 +92,7 @@ export default function ClientDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setClient(data);
-        setForm(data);
+        setForm({ ...data, country: data.country || DEFAULT_COUNTRY });
       }
     } catch (error) {
       console.error("Failed to fetch client:", error);
@@ -120,6 +113,7 @@ export default function ClientDetailPage() {
         address: form.address || undefined,
         city: form.city || undefined,
         country: form.country || undefined,
+        governorate: form.governorate || undefined,
         taxNumber: form.taxNumber || undefined,
         paymentTerms: form.paymentTerms || undefined,
         notes: form.notes || undefined,
@@ -168,7 +162,7 @@ export default function ClientDetailPage() {
       PARTIALLY_PAID: "warning",
       OVERDUE: "destructive",
     };
-    return <Badge variant={map[status] || "default"}>{status}</Badge>;
+    return <Badge variant={map[status] || "default"}>{INVOICE_STATUS_LABELS[status] || status}</Badge>;
   };
 
   return (
@@ -261,7 +255,7 @@ export default function ClientDetailPage() {
                   <Label>المحافظة</Label>
                   <Select
                     value={form.governorate || ""}
-                    onValueChange={(value) => setForm((prev) => ({ ...prev, governorate: value, city: value }))}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, governorate: value }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="اختر المحافظة" />
@@ -381,7 +375,7 @@ export default function ClientDetailPage() {
                           <TableCell>{inv.invoiceNumber}</TableCell>
                           <TableCell>{formatCurrency(Number(payment.amount))}</TableCell>
                           <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                          <TableCell><Badge variant="outline">{payment.method}</Badge></TableCell>
+                          <TableCell><Badge variant="outline">{PAYMENT_METHOD_LABELS[payment.method] || payment.method}</Badge></TableCell>
                         </TableRow>
                       ))
                     )}

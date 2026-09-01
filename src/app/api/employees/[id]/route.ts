@@ -5,8 +5,8 @@ import { z } from "zod";
 import { requireRole } from "@/lib/authorization";
 
 const updateEmployeeSchema = z.object({
-  branchId: z.string().uuid().optional(),
-  departmentId: z.string().uuid().optional(),
+  branchId: z.string().uuid().optional().or(z.literal("")),
+  departmentId: z.string().uuid().optional().or(z.literal("")),
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
   firstNameAr: z.string().optional(),
@@ -134,6 +134,8 @@ export async function PUT(
     if (updateData.email === "") updateData.email = null;
     if (updateData.gender === "") updateData.gender = null;
     if (updateData.maritalStatus === "") updateData.maritalStatus = null;
+    if (updateData.branchId === "") updateData.branchId = null;
+    if (updateData.departmentId === "") updateData.departmentId = null;
     if (updateData.dateOfBirth === "") {
       updateData.dateOfBirth = null;
     } else if (updateData.dateOfBirth) {

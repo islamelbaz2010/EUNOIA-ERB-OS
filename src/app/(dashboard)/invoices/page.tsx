@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Plus,
   Search,
@@ -51,6 +52,7 @@ interface Pagination {
 }
 
 export default function InvoicesPage() {
+  const searchParams = useSearchParams();
   const [invoices, setInvoices] = React.useState<Invoice[]>([]);
   const [pagination, setPagination] = React.useState<Pagination>({
     page: 1,
@@ -60,7 +62,7 @@ export default function InvoicesPage() {
   });
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("all");
+  const [statusFilter, setStatusFilter] = React.useState(searchParams.get("status") || "all");
 
   React.useEffect(() => {
     fetchInvoices();
@@ -159,6 +161,7 @@ export default function InvoicesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">جميع الحالات</SelectItem>
+                  <SelectItem value="OUTSTANDING">معلقة</SelectItem>
                   <SelectItem value="DRAFT">مسودة</SelectItem>
                   <SelectItem value="SENT">مرسلة</SelectItem>
                   <SelectItem value="PAID">مدفوعة</SelectItem>
