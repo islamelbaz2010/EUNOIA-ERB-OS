@@ -51,14 +51,11 @@ export async function GET(request: NextRequest) {
         (sum: number, inv: any) => sum + inv.payments.reduce((pSum: number, p: any) => pSum + Number(p.amount), 0),
         0
       ),
-      byStatus: {
-        DRAFT: invoices.filter((inv: any) => inv.status === "DRAFT").length,
-        SENT: invoices.filter((inv: any) => inv.status === "SENT").length,
-        PAID: invoices.filter((inv: any) => inv.status === "PAID").length,
-        PARTIALLY_PAID: invoices.filter((inv: any) => inv.status === "PARTIALLY_PAID").length,
-        OVERDUE: invoices.filter((inv: any) => inv.status === "OVERDUE").length,
-        CANCELLED: invoices.filter((inv: any) => inv.status === "CANCELLED").length,
-      },
+      byStatus: invoices.reduce((acc: Record<string, number>, inv: any) => {
+        const label = INVOICE_STATUS_LABELS[inv.status] || inv.status;
+        acc[label] = (acc[label] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
     };
 
     const items = invoices.map((inv: any) => {

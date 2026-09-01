@@ -44,6 +44,42 @@ function safeRenderValue(value: any): string {
   return String(value);
 }
 
+const CURRENCY_KEY_HINTS = [
+  "amount",
+  "total",
+  "salary",
+  "gross",
+  "net",
+  "deduction",
+  "overtime",
+  "price",
+  "paid",
+  "outstanding",
+];
+
+// These summary/item keys contain "total"/"overtime" etc. but hold a plain
+// count or a minute count, not a monetary amount — never currency-format them.
+const NON_CURRENCY_KEYS = new Set([
+  "totalEmployees",
+  "totalPresent",
+  "totalAbsent",
+  "totalInvoices",
+  "totalPayments",
+  "lateMinutes",
+  "overtimeMinutes",
+  "presentDays",
+  "absentDays",
+  "leaveDays",
+]);
+
+function isCurrencyField(key: string, reportId?: string | null): boolean {
+  if (NON_CURRENCY_KEYS.has(key)) return false;
+  // In the attendance report specifically, totals are minute counts, not money.
+  if (reportId === "attendance" && (key === "totalLate" || key === "totalOvertime")) return false;
+  const k = key.toLowerCase();
+  return CURRENCY_KEY_HINTS.some((hint) => k.includes(hint));
+}
+
 interface ReportCard {
   id: string;
   title: string;
@@ -157,6 +193,10 @@ const summaryLabels: Record<string, string> = {
   totalLateMinutes: "إجمالي تأخر (دقيقة)",
   totalOvertimeMinutes: "إجمالي العمل الإضافي (دقيقة)",
   byStatus: "حسب الحالة",
+  totalPayments: "إجمالي المدفوعات",
+  byMethod: "حسب طريقة الدفع",
+  totalRevenue: "إجمالي الإيرادات",
+  totalOutstanding: "المتبقي",
 };
 
 export default function ReportsPage() {
@@ -275,11 +315,13 @@ export default function ReportsPage() {
                         <p className="text-sm text-muted-foreground">{summaryLabels[key] || key}</p>
                         <p className="text-2xl font-bold">
                           {typeof value === "number"
-                            ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime")
+                            ? isCurrencyField(key, selectedReport)
                               ? formatCurrency(value)
                               : formatNumber(value)
                             : typeof value === "object" && value !== null
-                              ? Object.entries(value as Record<string, number>).map(([k, v]) => `${k}: ${v}`).join(", ")
+                              ? Object.entries(value as Record<string, number>)
+                                  .map(([k, v]) => `${k}: ${key === "byMethod" ? formatCurrency(v) : formatNumber(v)}`)
+                                  .join("، ")
                               : safeRenderValue(value)}
                         </p>
                       </CardContent>
@@ -288,7 +330,7 @@ export default function ReportsPage() {
                 </div>
               )}
 
-              {reportData.items && reportData.items.length > 0 && (
+              {reportData.items && reportData.items.length > 0 ? (
                 <Card>
                   <CardContent className="p-0">
                     <Table>
@@ -305,7 +347,7 @@ export default function ReportsPage() {
                             {Object.entries(item).map(([key, value], i) => (
                               <TableCell key={i}>
                                 {typeof value === "number"
-                                  ? key.toLowerCase().includes("amount") || key.toLowerCase().includes("total") || key.toLowerCase().includes("salary") || key.toLowerCase().includes("gross") || key.toLowerCase().includes("net") || key.toLowerCase().includes("deduction") || key.toLowerCase().includes("overtime") || key.toLowerCase().includes("price")
+                                  ? isCurrencyField(key, selectedReport)
                                     ? formatCurrency(value)
                                     : formatNumber(value)
                                   : safeRenderValue(value)}
@@ -317,6 +359,8 @@ export default function ReportsPage() {
                     </Table>
                   </CardContent>
                 </Card>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">لا توجد بيانات</p>
               )}
             </div>
           ) : (

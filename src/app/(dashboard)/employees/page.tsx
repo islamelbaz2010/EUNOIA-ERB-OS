@@ -66,8 +66,8 @@ interface Employee {
   phone: string;
   jobTitle: string;
   employmentStatus: string;
-  department?: { name: string } | null;
-  branch?: { name: string } | null;
+  department?: { name: string; nameAr?: string | null } | null;
+  branch?: { name: string; nameAr?: string | null } | null;
   joinDate: string;
 }
 
@@ -293,8 +293,8 @@ export default function EmployeesPage() {
                         <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{emp.department?.name || "-"}</TableCell>
-                    <TableCell>{emp.branch?.name || "-"}</TableCell>
+                    <TableCell>{emp.department?.nameAr || emp.department?.name || "-"}</TableCell>
+                    <TableCell>{emp.branch?.nameAr || emp.branch?.name || "-"}</TableCell>
                     <TableCell>{statusBadge(emp.employmentStatus)}</TableCell>
                     <TableCell>
                       <DropdownMenu>

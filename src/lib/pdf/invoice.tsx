@@ -250,6 +250,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
 
   const noteLines = parseNotes(data.invoice.notes || "");
   const hasNotes = noteLines.length > 0;
+  const totalPaid = (data.payments || []).reduce((sum, p) => sum + p.amount, 0);
 
   return (
     <Document>
@@ -330,7 +331,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
               </View>
             )}
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>TOTAL (In {data.currency})</Text>
+              <Text style={styles.totalsLabel}>SUBTOTAL (In {data.currency})</Text>
               <Text style={styles.totalsValue}>
                 {formatMoney(data.subtotal, data.currency)}
               </Text>
@@ -339,6 +340,22 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
               <Text>TOTAL (In {data.currency})</Text>
               <Text>{formatMoney(data.total, data.currency)}</Text>
             </View>
+            {totalPaid > 0 && (
+              <>
+                <View style={styles.totalsRow}>
+                  <Text style={styles.totalsLabel}>PAID (In {data.currency})</Text>
+                  <Text style={styles.totalsValue}>
+                    {formatMoney(totalPaid, data.currency)}
+                  </Text>
+                </View>
+                <View style={styles.totalsRow}>
+                  <Text style={styles.totalsLabel}>OUTSTANDING (In {data.currency})</Text>
+                  <Text style={styles.totalsValue}>
+                    {formatMoney(data.total - totalPaid, data.currency)}
+                  </Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
