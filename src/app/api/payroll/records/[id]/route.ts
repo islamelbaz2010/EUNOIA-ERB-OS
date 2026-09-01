@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { requireRole } from "@/lib/authorization";
+import { canEditPayrollRecord } from "@/lib/payroll-workflow";
 
 const updateRecordSchema = z.object({
   baseSalary: z.number().optional(),
@@ -83,14 +84,19 @@ export async function PUT(
 
     const existing = await db.payrollRecord.findFirst({
       where: { id, employee: { companyId } },
+      include: { payrollPeriod: { select: { status: true } } },
     });
     if (!existing) {
       return NextResponse.json({ error: "Payroll record not found" }, { status: 404 });
     }
 
-    if (existing.status === "APPROVED" || existing.status === "PAID") {
+    // The parent PayrollPeriod.status is the authoritative lifecycle gate —
+    // PayrollRecord.status is never advanced past CALCULATED anywhere in
+    // this codebase, so it cannot be used to detect an approved/locked
+    // period. See src/lib/payroll-workflow.ts.
+    if (!canEditPayrollRecord(existing.payrollPeriod.status)) {
       return NextResponse.json(
-        { error: "Cannot modify approved or paid records" },
+        { error: "Cannot modify payroll records once the period is under review or later" },
         { status: 400 }
       );
     }

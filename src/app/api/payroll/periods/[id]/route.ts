@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { requireRole } from "@/lib/authorization";
-import { canTransitionPayrollStatus } from "@/lib/payroll-workflow";
+import { canTransitionPayrollStatus, canEditPayrollPeriodFields } from "@/lib/payroll-workflow";
 
 const updatePeriodSchema = z.object({
   status: z.enum(["CALCULATED", "UNDER_REVIEW", "APPROVED", "LOCKED"]).optional(),
@@ -77,6 +77,18 @@ export async function PUT(
       return NextResponse.json({ error: "Payroll period not found" }, { status: 404 });
     }
 
+    // Period name/notes are frozen once the period is APPROVED or LOCKED —
+    // those are meant to be an immutable record at that point.
+    if (
+      (validatedData.name !== undefined || validatedData.notes !== undefined) &&
+      !canEditPayrollPeriodFields(period.status)
+    ) {
+      return NextResponse.json(
+        { error: "Cannot modify payroll period details once approved or locked" },
+        { status: 400 }
+      );
+    }
+
     const updateData: any = {};
     if (validatedData.name) updateData.name = validatedData.name;
     if (validatedData.notes !== undefined) updateData.notes = validatedData.notes;
@@ -103,7 +115,23 @@ export async function PUT(
       }
     }
 
-    const updated = await db.payrollPeriod.update({ where: { id, companyId }, data: updateData });
+    // Conditional (compare-and-swap) update: the WHERE clause re-checks that
+    // the period's status is still what we just read it as. This closes the
+    // race window between the check above and this write — two concurrent
+    // requests acting on a stale status can no longer both succeed.
+    const writeResult = await db.payrollPeriod.updateMany({
+      where: { id, companyId, status: period.status },
+      data: updateData,
+    });
+
+    if (writeResult.count === 0) {
+      return NextResponse.json(
+        { error: "Payroll period was modified by another user, please try again" },
+        { status: 409 }
+      );
+    }
+
+    const updated = await db.payrollPeriod.findUnique({ where: { id } });
 
     await db.auditLog.create({
       data: {

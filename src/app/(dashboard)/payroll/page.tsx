@@ -7,6 +7,7 @@ import {
   FileText,
   Play,
   CheckCircle,
+  ShieldCheck,
   Lock,
   Eye,
 } from "lucide-react";
@@ -33,6 +34,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { canCalculatePayrollPeriod, translatePayrollError } from "@/lib/payroll-workflow";
+import { PAYROLL_RECORD_STATUS_LABELS } from "@/lib/constants";
 
 interface PayrollPeriod {
   id: string;
@@ -122,18 +124,20 @@ export default function PayrollPage() {
     }
   }
 
-  // The existing status machine (see /api/payroll/periods/[id]) only allows
-  // CALCULATED -> UNDER_REVIEW, not a direct jump to APPROVED. This sends
-  // the period into review, matching the backend's actual next valid state.
-  async function handleSendForReview(periodId: string) {
+  // Shared handler for every PayrollPeriod status transition (send for
+  // review / approve / lock). The backend independently re-validates the
+  // transition (see src/lib/payroll-workflow.ts) regardless of what the UI
+  // offers, so this is purely "ask for the next valid state and report the
+  // result" — it can never itself skip a state.
+  async function handleTransition(periodId: string, status: string, successMessage: string) {
     try {
       const res = await fetch(`/api/payroll/periods/${periodId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "UNDER_REVIEW" }),
+        body: JSON.stringify({ status }),
       });
       if (res.ok) {
-        toast({ title: "تم إرسال الفترة للمراجعة" });
+        toast({ title: successMessage });
         fetchPayrollData();
       } else {
         const errorData = await res.json().catch(() => ({}));
@@ -148,6 +152,13 @@ export default function PayrollPage() {
     }
   }
 
+  const handleSendForReview = (periodId: string) =>
+    handleTransition(periodId, "UNDER_REVIEW", "تم إرسال الفترة للمراجعة");
+  const handleApprovePeriod = (periodId: string) =>
+    handleTransition(periodId, "APPROVED", "تم اعتماد الفترة");
+  const handleLockPeriod = (periodId: string) =>
+    handleTransition(periodId, "LOCKED", "تم قفل الفترة نهائياً");
+
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "default" | "success" | "warning" | "destructive"; label: string }> = {
       DRAFT: { variant: "default", label: "مسودة" },
@@ -158,6 +169,16 @@ export default function PayrollPage() {
     };
     const item = map[status] || { variant: "default" as const, label: status };
     return <Badge variant={item.variant}>{item.label}</Badge>;
+  };
+
+  // PayrollRecord has its own status enum (DRAFT/CALCULATED/REVIEWED/
+  // APPROVED/PAID) — distinct from PayrollPeriod's — so it must not be run
+  // through statusBadge above, which would silently fall back to a raw
+  // English value for REVIEWED/APPROVED/PAID.
+  const recordStatusBadge = (status: string) => {
+    const variant: "default" | "success" | "warning" | "destructive" =
+      status === "PAID" || status === "APPROVED" ? "success" : status === "CALCULATED" ? "warning" : "default";
+    return <Badge variant={variant}>{PAYROLL_RECORD_STATUS_LABELS[status] || status}</Badge>;
   };
 
   // Calculation is only ever valid for a DRAFT period (enforced by the
@@ -259,6 +280,26 @@ export default function PayrollPage() {
                                 title="إرسال للمراجعة"
                               >
                                 <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {period.status === "UNDER_REVIEW" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleApprovePeriod(period.id)}
+                                title="اعتماد"
+                              >
+                                <ShieldCheck className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {period.status === "APPROVED" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleLockPeriod(period.id)}
+                                title="قفل نهائي"
+                              >
+                                <Lock className="h-4 w-4" />
                               </Button>
                             )}
                           </div>
@@ -371,7 +412,7 @@ export default function PayrollPage() {
                           <TableCell className="text-destructive">{formatCurrency(Number(record.totalDeductions))}</TableCell>
                           <TableCell>{formatCurrency(Number(record.gross))}</TableCell>
                           <TableCell className="font-medium">{formatCurrency(Number(record.net))}</TableCell>
-                          <TableCell>{statusBadge(record.status)}</TableCell>
+                          <TableCell>{recordStatusBadge(record.status)}</TableCell>
                         </TableRow>
                       ))
                     )}

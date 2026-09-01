@@ -267,7 +267,17 @@ export async function calculatePeriodPayroll(
     throw new Error(`Payroll period ${periodId} not found`);
   }
 
-  if (period.status !== "DRAFT") {
+  // Atomically claim the period for calculation. The WHERE clause re-checks
+  // status === DRAFT at the moment of the write, and the database serializes
+  // concurrent UPDATEs against the same row, so if two calculate requests
+  // race, only one of these can ever succeed — the other gets count 0 and
+  // is rejected below instead of both proceeding to generate records.
+  const claim = await db.payrollPeriod.updateMany({
+    where: { id: periodId, status: "DRAFT" },
+    data: { status: "CALCULATED" },
+  });
+
+  if (claim.count === 0) {
     throw new Error(`Payroll period ${periodId} is not in DRAFT status`);
   }
 

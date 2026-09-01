@@ -33,7 +33,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Period must be in DRAFT status to calculate" }, { status: 400 });
     }
 
-    const result = await calculatePeriodPayroll(periodId);
+    let result;
+    try {
+      result = await calculatePeriodPayroll(periodId);
+    } catch (calcError) {
+      // The engine itself re-checks DRAFT atomically at write time (see
+      // src/lib/payroll-engine). The pre-check above already covers the
+      // common case; this only fires if another request won a genuine
+      // concurrent-calculation race between our read and the engine's
+      // conditional write — surface it as the same clean 400 instead of
+      // falling through to a generic 500.
+      if (calcError instanceof Error && calcError.message.includes("is not in DRAFT status")) {
+        return NextResponse.json({ error: "Period must be in DRAFT status to calculate" }, { status: 400 });
+      }
+      throw calcError;
+    }
 
     await db.auditLog.create({
       data: {

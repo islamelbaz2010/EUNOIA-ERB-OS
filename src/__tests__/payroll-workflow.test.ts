@@ -1,6 +1,8 @@
 import {
   canCalculatePayrollPeriod,
   canTransitionPayrollStatus,
+  canEditPayrollRecord,
+  canEditPayrollPeriodFields,
   translatePayrollError,
 } from "@/lib/payroll-workflow";
 
@@ -40,6 +42,51 @@ describe("payroll-workflow", () => {
       expect(canTransitionPayrollStatus("DRAFT", "APPROVED")).toBe(false);
       expect(canTransitionPayrollStatus("UNKNOWN", "CALCULATED")).toBe(false);
     });
+
+    // LOCKED is terminal in V1: no outgoing transition of any kind.
+    it("rejects every possible transition out of LOCKED", () => {
+      expect(canTransitionPayrollStatus("LOCKED", "APPROVED")).toBe(false);
+      expect(canTransitionPayrollStatus("LOCKED", "UNDER_REVIEW")).toBe(false);
+      expect(canTransitionPayrollStatus("LOCKED", "CALCULATED")).toBe(false);
+      expect(canTransitionPayrollStatus("LOCKED", "DRAFT")).toBe(false);
+      expect(canTransitionPayrollStatus("LOCKED", "LOCKED")).toBe(false);
+    });
+
+    // V1 has no rejection/return-to-draft/reopen path from any state.
+    it("rejects every attempt to move a period back to an earlier state", () => {
+      expect(canTransitionPayrollStatus("CALCULATED", "DRAFT")).toBe(false);
+      expect(canTransitionPayrollStatus("UNDER_REVIEW", "DRAFT")).toBe(false);
+      expect(canTransitionPayrollStatus("UNDER_REVIEW", "CALCULATED")).toBe(false);
+      expect(canTransitionPayrollStatus("APPROVED", "DRAFT")).toBe(false);
+      expect(canTransitionPayrollStatus("APPROVED", "CALCULATED")).toBe(false);
+      expect(canTransitionPayrollStatus("APPROVED", "UNDER_REVIEW")).toBe(false);
+    });
+  });
+
+  describe("canEditPayrollRecord", () => {
+    it("allows editing a payroll record while its period is DRAFT or CALCULATED", () => {
+      expect(canEditPayrollRecord("DRAFT")).toBe(true);
+      expect(canEditPayrollRecord("CALCULATED")).toBe(true);
+    });
+
+    it("blocks editing once the parent period is under review or later", () => {
+      expect(canEditPayrollRecord("UNDER_REVIEW")).toBe(false);
+      expect(canEditPayrollRecord("APPROVED")).toBe(false);
+      expect(canEditPayrollRecord("LOCKED")).toBe(false);
+    });
+  });
+
+  describe("canEditPayrollPeriodFields", () => {
+    it("allows editing period name/notes through DRAFT, CALCULATED, and UNDER_REVIEW", () => {
+      expect(canEditPayrollPeriodFields("DRAFT")).toBe(true);
+      expect(canEditPayrollPeriodFields("CALCULATED")).toBe(true);
+      expect(canEditPayrollPeriodFields("UNDER_REVIEW")).toBe(true);
+    });
+
+    it("blocks editing period name/notes once APPROVED or LOCKED", () => {
+      expect(canEditPayrollPeriodFields("APPROVED")).toBe(false);
+      expect(canEditPayrollPeriodFields("LOCKED")).toBe(false);
+    });
   });
 
   describe("translatePayrollError", () => {
@@ -61,6 +108,33 @@ describe("payroll-workflow", () => {
       expect(translatePayrollError("Payroll period not found", "fallback")).toBe(
         "لم يتم العثور على فترة الرواتب"
       );
+    });
+
+    it("translates the record-edit-blocked error to Arabic", () => {
+      const result = translatePayrollError(
+        "Cannot modify payroll records once the period is under review or later",
+        "fallback"
+      );
+      expect(result).toBe("لا يمكن تعديل سجلات الرواتب بعد إرسال الفترة للمراجعة");
+      expect(result).not.toMatch(/[A-Za-z]/);
+    });
+
+    it("translates the period-fields-blocked error to Arabic", () => {
+      const result = translatePayrollError(
+        "Cannot modify payroll period details once approved or locked",
+        "fallback"
+      );
+      expect(result).toBe("لا يمكن تعديل بيانات فترة الرواتب بعد اعتمادها أو قفلها");
+      expect(result).not.toMatch(/[A-Za-z]/);
+    });
+
+    it("translates the concurrent-modification conflict error to Arabic", () => {
+      const result = translatePayrollError(
+        "Payroll period was modified by another user, please try again",
+        "fallback"
+      );
+      expect(result).toBe("تم تعديل فترة الرواتب من قبل مستخدم آخر، يرجى إعادة المحاولة");
+      expect(result).not.toMatch(/[A-Za-z]/);
     });
 
     it("falls back to the given Arabic default for an unrecognized message", () => {
