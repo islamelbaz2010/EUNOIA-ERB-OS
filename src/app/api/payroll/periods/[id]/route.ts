@@ -33,7 +33,7 @@ export async function GET(
       include: {
         records: {
           include: {
-            employee: { select: { id: true, firstName: true, lastName: true, employeeCode: true } },
+            employee: { select: { id: true, firstName: true, lastName: true, displayName: true, employeeCode: true } },
             componentsList: true,
           },
         },
