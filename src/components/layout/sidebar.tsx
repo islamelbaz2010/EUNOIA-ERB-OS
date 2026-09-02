@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useLocale } from "@/hooks/use-locale";
 import {
   LayoutDashboard,
   Users,
@@ -24,51 +25,47 @@ import {
 } from "lucide-react";
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ReactNode;
 }
 
 interface NavSection {
-  title?: string;
+  titleKey?: string;
   items: NavItem[];
 }
 
-const navSections: NavSection[] = [
-  {
-    items: [
-      { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { label: "Employees", href: "/employees", icon: <Users className="h-5 w-5" /> },
-      { label: "Attendance", href: "/attendance", icon: <Clock className="h-5 w-5" /> },
-      { label: "Payroll", href: "/payroll", icon: <DollarSign className="h-5 w-5" /> },
-    ],
-  },
-  {
-    title: "Operations",
-    items: [
-      { label: "Clients", href: "/clients", icon: <Briefcase className="h-5 w-5" /> },
-      { label: "Services", href: "/services", icon: <FileText className="h-5 w-5" /> },
-      { label: "Invoices", href: "/invoices", icon: <Receipt className="h-5 w-5" /> },
-    ],
-  },
-  {
-    title: "Insights",
-    items: [
-      { label: "Reports", href: "/reports", icon: <BarChart3 className="h-5 w-5" /> },
-      { label: "Administration", href: "/admin", icon: <Settings className="h-5 w-5" /> },
-    ],
-  },
-];
-
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useLocale();
   const user = session?.user as any;
+
+  const navSections: NavSection[] = [
+    {
+      items: [
+        { labelKey: "nav.dashboard", href: "/dashboard", icon: <LayoutDashboard className="h-5 w-5" /> },
+        { labelKey: "nav.employees", href: "/employees", icon: <Users className="h-5 w-5" /> },
+        { labelKey: "nav.attendance", href: "/attendance", icon: <Clock className="h-5 w-5" /> },
+        { labelKey: "nav.payroll", href: "/payroll", icon: <DollarSign className="h-5 w-5" /> },
+      ],
+    },
+    {
+      titleKey: "common.operations",
+      items: [
+        { labelKey: "nav.clients", href: "/clients", icon: <Briefcase className="h-5 w-5" /> },
+        { labelKey: "nav.services", href: "/services", icon: <FileText className="h-5 w-5" /> },
+        { labelKey: "nav.invoices", href: "/invoices", icon: <Receipt className="h-5 w-5" /> },
+      ],
+    },
+    {
+      titleKey: "common.insights",
+      items: [
+        { labelKey: "nav.reports", href: "/reports", icon: <BarChart3 className="h-5 w-5" /> },
+        { labelKey: "nav.admin", href: "/admin", icon: <Settings className="h-5 w-5" /> },
+      ],
+    },
+  ];
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -88,7 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-card transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
+          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-r bg-card transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -104,6 +101,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             size="icon"
             className="lg:hidden"
             onClick={onClose}
+            aria-label={t("common.close")}
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -113,9 +111,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <nav className="space-y-6 px-3">
             {navSections.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                {section.title && (
+                {section.titleKey && (
                   <h4 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {section.title}
+                    {t(section.titleKey)}
                   </h4>
                 )}
                 <div className="space-y-1">
@@ -132,7 +130,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       )}
                     >
                       {item.icon}
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   ))}
                 </div>
@@ -156,7 +154,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {user?.email ?? ""}
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => signOut({ callbackUrl: "/login" })}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => signOut({ callbackUrl: "/login" })} aria-label={t("common.signOut")}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>

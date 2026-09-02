@@ -3,24 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { User, Mail, Shield, ArrowLeft } from "lucide-react";
+import { User, Mail, Shield, ArrowLeft, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: "Administrator",
-  HR: "HR",
-  FINANCE: "Finance",
-  MANAGER: "Manager",
-  EMPLOYEE: "Employee",
-  VIEWER: "Viewer",
-};
+import { useLocale, localeLabel } from "@/hooks/use-locale";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
+  const { t, locale } = useLocale();
   const user = session?.user as any;
   const [employee, setEmployee] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
@@ -50,8 +43,8 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="text-muted-foreground">Your account information</p>
+        <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+        <p className="text-muted-foreground">{t("profile.yourAccount")}</p>
       </div>
 
       <Card>
@@ -70,7 +63,21 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
-                <Badge variant="secondary">{ROLE_LABELS[user?.role] || user?.role}</Badge>
+                <Badge variant="secondary">{user?.role}</Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-sm text-muted-foreground">{t("profile.status")}</p>
+              <p className="font-medium">{t("common.active")}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("profile.language")}</p>
+              <div className="flex items-center gap-2 font-medium">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                {localeLabel[locale]}
               </div>
             </div>
           </div>
@@ -82,32 +89,32 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Linked Employee Record
+              {t("profile.linkedEmployee")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">Name</p>
+                <p className="text-sm text-muted-foreground">{t("profile.name")}</p>
                 <p className="font-medium">{employee.displayName}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Employee Code</p>
+                <p className="text-sm text-muted-foreground">{t("profile.employeeCode")}</p>
                 <p className="font-medium">{employee.employeeCode || "—"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Job Title</p>
+                <p className="text-sm text-muted-foreground">{t("profile.jobTitle")}</p>
                 <p className="font-medium">{employee.jobTitle || "—"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Branch</p>
+                <p className="text-sm text-muted-foreground">{t("profile.branch")}</p>
                 <p className="font-medium">{employee.branch?.name || employee.branch?.nameAr || "—"}</p>
               </div>
             </div>
             <Button asChild variant="outline">
               <Link href={`/employees/${employee.id}`}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                View Full Employee Record
+                <ArrowLeft className="me-2 h-4 w-4" />
+                {t("profile.viewFull")}
               </Link>
             </Button>
           </CardContent>
@@ -115,7 +122,7 @@ export default function ProfilePage() {
       ) : (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
-            No employee record is linked to this account. This account is for administrative use only.
+            {t("profile.adminOnly")}
           </CardContent>
         </Card>
       )}

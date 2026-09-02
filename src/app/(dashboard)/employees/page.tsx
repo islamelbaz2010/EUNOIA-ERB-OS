@@ -9,6 +9,7 @@ import {
   Eye,
   Pencil,
   UserX,
+  Trash2,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -49,7 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDate } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { EMPLOYMENT_STATUS_LABELS } from "@/lib/constants";
+import { useLocale } from "@/hooks/use-locale";
 
 interface Branch {
   id: string;
@@ -80,6 +81,7 @@ interface Pagination {
 }
 
 export default function EmployeesPage() {
+  const { t, isRTL } = useLocale();
   const [employees, setEmployees] = React.useState<Employee[]>([]);
   const [pagination, setPagination] = React.useState<Pagination>({
     page: 1,
@@ -101,6 +103,8 @@ export default function EmployeesPage() {
     branchId: "",
   });
   const [adding, setAdding] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<Employee | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
 
   React.useEffect(() => {
     fetchEmployees();
@@ -156,16 +160,16 @@ export default function EmployeesPage() {
         }),
       });
       if (res.ok) {
-        toast({ title: "Employee added successfully" });
+        toast({ title: t("employees.added") });
         setShowAddDialog(false);
         setAddForm({ firstName: "", lastName: "", email: "", phone: "", jobTitle: "", branchId: "" });
         fetchEmployees();
       } else {
         const data = await res.json();
-        toast({ title: "Error", description: data.error, variant: "destructive" });
+        toast({ title: t("common.error"), description: data.error, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to add employee", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("employees.added"), variant: "destructive" });
     } finally {
       setAdding(false);
     }
@@ -179,11 +183,30 @@ export default function EmployeesPage() {
         body: JSON.stringify({ employmentStatus: "TERMINATED" }),
       });
       if (res.ok) {
-        toast({ title: "Employee deactivated successfully" });
+        toast({ title: t("employees.deactivated") });
         fetchEmployees();
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to deactivate employee", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("employees.deactivated"), variant: "destructive" });
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/employees/${id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast({ title: t("common.success"), description: data.message });
+        setDeleteTarget(null);
+        fetchEmployees();
+      } else {
+        toast({ title: t("common.error"), description: data.error, variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: t("common.error"), variant: "destructive" });
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -194,37 +217,37 @@ export default function EmployeesPage() {
       TERMINATED: "destructive",
       SUSPENDED: "destructive",
     };
-    return <Badge variant={variants[status] || "default"}>{EMPLOYMENT_STATUS_LABELS[status] || status}</Badge>;
+    return <Badge variant={variants[status] || "default"}>{t(`status.employee.${status}`) || status}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Employees</h1>
-          <p className="text-muted-foreground">Manage your employee records</p>
+          <h1 className="text-2xl font-bold">{t("employees.title")}</h1>
+          <p className="text-muted-foreground">{t("employees.subtitle")}</p>
         </div>
         <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Employee
+          <Plus className="me-2 h-4 w-4" />
+          {t("employees.add")}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Employee List</CardTitle>
+            <CardTitle>{t("employees.list")}</CardTitle>
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground ${isRTL ? "left-3" : "right-3"}`} />
                 <Input
-                  placeholder="Search..."
+                  placeholder={t("common.search")}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
                     setPagination((prev) => ({ ...prev, page: 1 }));
                   }}
-                  className="pr-9 w-64"
+                  className={`${isRTL ? "pl-9" : "pr-9"} w-64`}
                 />
               </div>
               <Select
@@ -235,14 +258,14 @@ export default function EmployeesPage() {
                 }}
               >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("common.status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="ON_LEAVE">On Leave</SelectItem>
-                  <SelectItem value="TERMINATED">Terminated</SelectItem>
-                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                  <SelectItem value="all">{t("common.all")}</SelectItem>
+                  <SelectItem value="ACTIVE">{t("status.employee.ACTIVE")}</SelectItem>
+                  <SelectItem value="ON_LEAVE">{t("status.employee.ON_LEAVE")}</SelectItem>
+                  <SelectItem value="TERMINATED">{t("status.employee.TERMINATED")}</SelectItem>
+                  <SelectItem value="SUSPENDED">{t("status.employee.SUSPENDED")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -252,12 +275,12 @@ export default function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Branch</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-left">Actions</TableHead>
+                <TableHead>{t("employees.code")}</TableHead>
+                <TableHead>{t("employees.name")}</TableHead>
+                <TableHead>{t("employees.department")}</TableHead>
+                <TableHead>{t("employees.branch")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
+                <TableHead className="text-start">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -275,7 +298,7 @@ export default function EmployeesPage() {
               ) : employees.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8">
-                    No employees found
+                    {t("employees.noEmployees")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -288,8 +311,8 @@ export default function EmployeesPage() {
                         <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{emp.department?.name || emp.department?.nameAr || "-"}</TableCell>
-                    <TableCell>{emp.branch?.name || emp.branch?.nameAr || "-"}</TableCell>
+                    <TableCell>{emp.department?.name || emp.department?.nameAr || "—"}</TableCell>
+                    <TableCell>{emp.branch?.name || emp.branch?.nameAr || "—"}</TableCell>
                     <TableCell>{statusBadge(emp.employmentStatus)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -300,23 +323,24 @@ export default function EmployeesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/employees/${emp.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View
+                            <Link href={`/employees/${emp.id}`} className="flex items-center">
+                              <Eye className="me-2 h-4 w-4" />
+                              {t("common.view")}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/employees/${emp.id}?tab=profile`}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit
+                            <Link href={`/employees/${emp.id}?tab=profile`} className="flex items-center">
+                              <Pencil className="me-2 h-4 w-4" />
+                              {t("common.edit")}
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeactivate(emp.id)}
-                            className="text-destructive"
-                          >
-                            <UserX className="mr-2 h-4 w-4" />
-                            Deactivate
+                          <DropdownMenuItem onClick={() => handleDeactivate(emp.id)}>
+                            <UserX className="me-2 h-4 w-4" />
+                            {t("employees.deactivate")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeleteTarget(emp)} className="text-destructive focus:text-destructive">
+                            <Trash2 className="me-2 h-4 w-4" />
+                            {t("employees.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -330,7 +354,7 @@ export default function EmployeesPage() {
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                Total: {pagination.total} employees
+                {t("common.total")}: {pagination.total} {t("employees.title").toLowerCase()}
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -361,13 +385,13 @@ export default function EmployeesPage() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Employee</DialogTitle>
-            <DialogDescription>Enter the new employee's information</DialogDescription>
+            <DialogTitle>{t("employees.add")}</DialogTitle>
+            <DialogDescription>{t("employees.subtitle")}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddEmployee} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{t("common.firstName")}</Label>
                 <Input
                   id="firstName"
                   value={addForm.firstName}
@@ -376,7 +400,7 @@ export default function EmployeesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{t("common.lastName")}</Label>
                 <Input
                   id="lastName"
                   value={addForm.lastName}
@@ -386,7 +410,7 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -397,7 +421,7 @@ export default function EmployeesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{t("common.phone")}</Label>
                 <Input
                   id="phone"
                   value={addForm.phone}
@@ -406,7 +430,7 @@ export default function EmployeesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="jobTitle">Job Title</Label>
+                <Label htmlFor="jobTitle">{t("common.jobTitle")}</Label>
                 <Input
                   id="jobTitle"
                   value={addForm.jobTitle}
@@ -415,13 +439,13 @@ export default function EmployeesPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="branchId">Branch</Label>
+              <Label htmlFor="branchId">{t("employees.branch")}</Label>
               <Select
                 value={addForm.branchId}
                 onValueChange={(value) => setAddForm((prev) => ({ ...prev, branchId: value }))}
               >
                 <SelectTrigger id="branchId">
-                  <SelectValue placeholder="Select branch" />
+                  <SelectValue placeholder={t("common.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   {branches.map((b) => (
@@ -432,13 +456,34 @@ export default function EmployeesPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={adding}>
-                {adding ? "Adding..." : "Add"}
+                {adding ? t("common.loading") : t("common.add")}
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("employees.delete")}</DialogTitle>
+            <DialogDescription>{t("employees.deleteConfirm")}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+            >
+              {deleting ? t("common.loading") : t("common.delete")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

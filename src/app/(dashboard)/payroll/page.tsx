@@ -34,7 +34,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency, formatNumber } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { canCalculatePayrollPeriod, translatePayrollError } from "@/lib/payroll-workflow";
-import { PAYROLL_RECORD_STATUS_LABELS } from "@/lib/constants";
+import { useLocale } from "@/hooks/use-locale";
 
 interface PayrollPeriod {
   id: string;
@@ -59,6 +59,7 @@ interface PayrollRecord {
 }
 
 export default function PayrollPage() {
+  const { t } = useLocale();
   const [periods, setPeriods] = React.useState<PayrollPeriod[]>([]);
   const [records, setRecords] = React.useState<PayrollRecord[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -106,29 +107,24 @@ export default function PayrollPage() {
         body: JSON.stringify({ periodId }),
       });
       if (res.ok) {
-        toast({ title: "Calculation completed successfully" });
+        toast({ title: t("payroll.calculationCompleted") });
         fetchPayrollData();
         fetchRecords(periodId);
       } else {
         const errorData = await res.json().catch(() => ({}));
         toast({
-          title: "Error",
-          description: translatePayrollError(errorData.error, "Calculation failed"),
+          title: t("common.error"),
+          description: translatePayrollError(errorData.error, t("payroll.calculationCompleted")),
           variant: "destructive",
         });
       }
     } catch (error) {
-      toast({ title: "Error", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
     } finally {
       setCalculating(false);
     }
   }
 
-  // Shared handler for every PayrollPeriod status transition (send for
-  // review / approve / lock). The backend independently re-validates the
-  // transition (see src/lib/payroll-workflow.ts) regardless of what the UI
-  // offers, so this is purely "ask for the next valid state and report the
-  // result" — it can never itself skip a state.
   async function handleTransition(periodId: string, status: string, successMessage: string) {
     try {
       const res = await fetch(`/api/payroll/periods/${periodId}`, {
@@ -142,90 +138,83 @@ export default function PayrollPage() {
       } else {
         const errorData = await res.json().catch(() => ({}));
         toast({
-          title: "Error",
-          description: translatePayrollError(errorData.error, "This action could not be completed"),
+          title: t("common.error"),
+          description: translatePayrollError(errorData.error, t("common.error")),
           variant: "destructive",
         });
       }
     } catch (error) {
-      toast({ title: "Error", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
     }
   }
 
   const handleSendForReview = (periodId: string) =>
-    handleTransition(periodId, "UNDER_REVIEW", "Period sent for review");
+    handleTransition(periodId, "UNDER_REVIEW", t("payroll.periodSentReview"));
   const handleApprovePeriod = (periodId: string) =>
-    handleTransition(periodId, "APPROVED", "Period approved");
+    handleTransition(periodId, "APPROVED", t("payroll.periodApproved"));
   const handleLockPeriod = (periodId: string) =>
-    handleTransition(periodId, "LOCKED", "Period locked permanently");
+    handleTransition(periodId, "LOCKED", t("payroll.periodLocked"));
 
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "default" | "success" | "warning" | "destructive"; label: string }> = {
-      DRAFT: { variant: "default", label: "Draft" },
-      CALCULATED: { variant: "warning", label: "Calculated" },
-      UNDER_REVIEW: { variant: "default", label: "Under Review" },
-      APPROVED: { variant: "success", label: "Approved" },
-      LOCKED: { variant: "destructive", label: "Locked" },
+      DRAFT: { variant: "default", label: t("status.payroll.DRAFT") },
+      CALCULATED: { variant: "warning", label: t("status.payroll.CALCULATED") },
+      UNDER_REVIEW: { variant: "default", label: t("status.payroll.UNDER_REVIEW") },
+      APPROVED: { variant: "success", label: t("status.payroll.APPROVED") },
+      LOCKED: { variant: "destructive", label: t("status.payroll.LOCKED") },
     };
     const item = map[status] || { variant: "default" as const, label: status };
     return <Badge variant={item.variant}>{item.label}</Badge>;
   };
 
-  // PayrollRecord has its own status enum (DRAFT/CALCULATED/REVIEWED/
-  // APPROVED/PAID) — distinct from PayrollPeriod's — so it must not be run
-  // through statusBadge above, which would silently fall back to a raw
-  // English value for REVIEWED/APPROVED/PAID.
   const recordStatusBadge = (status: string) => {
     const variant: "default" | "success" | "warning" | "destructive" =
       status === "PAID" || status === "APPROVED" ? "success" : status === "CALCULATED" ? "warning" : "default";
-    return <Badge variant={variant}>{PAYROLL_RECORD_STATUS_LABELS[status] || status}</Badge>;
+    return <Badge variant={variant}>{t(`status.payrollRecord.${status}`) || status}</Badge>;
   };
 
-  // Calculation is only ever valid for a DRAFT period (enforced by the
-  // backend). Only offer those here so the button can never be clicked
-  // for a period the API will reject.
   const draftPeriods = periods.filter((p) => canCalculatePayrollPeriod(p.status));
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Payroll</h1>
-        <p className="text-muted-foreground">Manage payroll periods and calculations</p>
+        <h1 className="text-2xl font-bold">{t("payroll.title")}</h1>
+        <p className="text-muted-foreground">{t("payroll.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="periods">
         <TabsList>
           <TabsTrigger value="periods">
-            <Wallet className="mr-2 h-4 w-4" />
-            Periods
+            <Wallet className="me-2 h-4 w-4" />
+            {t("payroll.periods")}
           </TabsTrigger>
           <TabsTrigger value="calculate">
-            <Calculator className="mr-2 h-4 w-4" />
-            Calculate
+            <Calculator className="me-2 h-4 w-4" />
+            {t("payroll.calculate")}
           </TabsTrigger>
           <TabsTrigger value="records">
-            <FileText className="mr-2 h-4 w-4" />
-            Records
+            <FileText className="me-2 h-4 w-4" />
+            {t("payroll.records")}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="periods" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Payroll Periods</CardTitle>
+              <CardTitle>{t("payroll.periods")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Employees</TableHead>
-                    <TableHead>Gross</TableHead>
-                    <TableHead>Net</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-left">Actions</TableHead>
+                    <TableHead>{t("payroll.name")}</TableHead>
+                    <TableHead>{t("payroll.from")}</TableHead>
+                    <TableHead>{t("payroll.to")}</TableHead>
+                    <TableHead>{t("payroll.employees")}</TableHead>
+                    <TableHead>{t("payroll.gross")}</TableHead>
+                    <TableHead>{t("payroll.net")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead className="text-start">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -240,7 +229,7 @@ export default function PayrollPage() {
                   ) : periods.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
-                        No payroll periods found
+                        {t("payroll.noPeriods")}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -259,6 +248,7 @@ export default function PayrollPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => fetchRecords(period.id)}
+                              title={t("payroll.view")}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -268,6 +258,7 @@ export default function PayrollPage() {
                                 variant="outline"
                                 onClick={() => handleCalculate(period.id)}
                                 disabled={calculating}
+                                title={t("payroll.calculate")}
                               >
                                 <Calculator className="h-4 w-4" />
                               </Button>
@@ -277,7 +268,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleSendForReview(period.id)}
-                                title="Send for review"
+                                title={t("payroll.sendReview")}
                               >
                                 <CheckCircle className="h-4 w-4" />
                               </Button>
@@ -287,7 +278,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleApprovePeriod(period.id)}
-                                title="Approve"
+                                title={t("payroll.approve")}
                               >
                                 <ShieldCheck className="h-4 w-4" />
                               </Button>
@@ -297,7 +288,7 @@ export default function PayrollPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleLockPeriod(period.id)}
-                                title="Lock permanently"
+                                title={t("payroll.lock")}
                               >
                                 <Lock className="h-4 w-4" />
                               </Button>
@@ -316,19 +307,19 @@ export default function PayrollPage() {
         <TabsContent value="calculate" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Calculate Payroll</CardTitle>
+              <CardTitle>{t("payroll.calculate")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {draftPeriods.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  There are no Draft payroll periods ready to calculate. Periods that have already been calculated can be tracked from the "Periods" or "Records" tab.
+                  {t("payroll.noDraft")}
                 </p>
               ) : (
                 <>
                   <div className="flex items-center gap-4">
                     <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                       <SelectTrigger className="w-64">
-                        <SelectValue placeholder="Select period" />
+                        <SelectValue placeholder={t("payroll.selectPeriod")} />
                       </SelectTrigger>
                       <SelectContent>
                         {draftPeriods.map((period) => (
@@ -343,17 +334,17 @@ export default function PayrollPage() {
                       disabled={!selectedPeriod || calculating || !draftPeriods.some((p) => p.id === selectedPeriod)}
                     >
                       {calculating ? (
-                        "Calculating..."
+                        t("common.loading")
                       ) : (
                         <>
-                          <Play className="mr-2 h-4 w-4" />
-                          Start Calculation
+                          <Play className="me-2 h-4 w-4" />
+                          {t("payroll.calculateAction")}
                         </>
                       )}
                     </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    This will calculate payroll for all active employees in the selected period
+                    {t("payroll.selectPeriod")}
                   </p>
                 </>
               )}
@@ -365,7 +356,7 @@ export default function PayrollPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Payroll Records</CardTitle>
+                <CardTitle>{t("payroll.records")}</CardTitle>
                 {selectedPeriod && (
                   <Badge variant="secondary">
                     {periods.find((p) => p.id === selectedPeriod)?.name}
@@ -376,26 +367,26 @@ export default function PayrollPage() {
             <CardContent>
               {!selectedPeriod ? (
                 <p className="text-center text-muted-foreground py-8">
-                  Select a period to view its records
+                  {t("payroll.noRecords")}
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Base Salary</TableHead>
-                      <TableHead>Additions</TableHead>
-                      <TableHead>Deductions</TableHead>
-                      <TableHead>Gross</TableHead>
-                      <TableHead>Net</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("employees.name")}</TableHead>
+                      <TableHead>{t("payroll.baseSalary")}</TableHead>
+                      <TableHead>{t("payroll.additions")}</TableHead>
+                      <TableHead>{t("payroll.deductions")}</TableHead>
+                      <TableHead>{t("payroll.gross")}</TableHead>
+                      <TableHead>{t("payroll.net")}</TableHead>
+                      <TableHead>{t("common.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {records.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8">
-                          No records found
+                          {t("common.noRecords")}
                         </TableCell>
                       </TableRow>
                     ) : (

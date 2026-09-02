@@ -1,12 +1,13 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getLocale } from "@/lib/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency = "EGP"): string {
-  return new Intl.NumberFormat("en-EG", {
+export function formatCurrency(amount: number, currency = "EGP", locale?: string): string {
+  return new Intl.NumberFormat(locale ?? getLocale(), {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
@@ -14,22 +15,22 @@ export function formatCurrency(amount: number, currency = "EGP"): string {
   }).format(amount);
 }
 
-export function formatNumber(num: number): string {
-  return new Intl.NumberFormat("en-EG").format(num);
+export function formatNumber(num: number, locale?: string): string {
+  return new Intl.NumberFormat(locale ?? getLocale()).format(num);
 }
 
-export function formatDate(date: Date | string, locale = "en-EG"): string {
+export function formatDate(date: Date | string, locale?: string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString(locale, {
+  return d.toLocaleDateString(locale ?? getLocale(), {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
 }
 
-export function formatDateTime(date: Date | string, locale = "en-EG"): string {
+export function formatDateTime(date: Date | string, locale?: string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleString(locale, {
+  return d.toLocaleString(locale ?? getLocale(), {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

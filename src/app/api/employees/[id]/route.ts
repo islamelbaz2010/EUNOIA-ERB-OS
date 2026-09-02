@@ -245,31 +245,67 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const employee = await db.employee.findUnique({ where: { id, companyId } });
+    const employee = await db.employee.findUnique({
+      where: { id, companyId },
+      include: {
+        _count: {
+          select: {
+            attendancePunches: true,
+            attendanceDays: true,
+            leaveRequests: true,
+            payrollRecords: true,
+            payslips: true,
+            salaryProfiles: true,
+            scheduleAssignments: true,
+          },
+        },
+      },
+    });
     if (!employee) {
       return NextResponse.json({ error: "Employee not found" }, { status: 404 });
     }
 
-    const updated = await db.employee.update({
-      where: { id },
-      data: {
-        employmentStatus: "TERMINATED",
-        endDate: new Date(),
-      },
+    const protectedReasons: string[] = [];
+    const counts = employee._count;
+    if (counts.attendancePunches > 0) protectedReasons.push(`${counts.attendancePunches} attendance punch record(s)`);
+    if (counts.attendanceDays > 0) protectedReasons.push(`${counts.attendanceDays} attendance day(s)`);
+    if (counts.leaveRequests > 0) protectedReasons.push(`${counts.leaveRequests} leave request(s)`);
+    if (counts.payrollRecords > 0) protectedReasons.push(`${counts.payrollRecords} payroll record(s)`);
+    if (counts.payslips > 0) protectedReasons.push(`${counts.payslips} payslip(s)`);
+    if (counts.salaryProfiles > 0) protectedReasons.push(`${counts.salaryProfiles} salary profile(s)`);
+    if (counts.scheduleAssignments > 0) protectedReasons.push(`${counts.scheduleAssignments} schedule assignment(s)`);
+
+    if (protectedReasons.length > 0) {
+      return NextResponse.json(
+        {
+          error: "Employee has linked historical records and cannot be permanently deleted",
+          reasons: protectedReasons,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Clear the employee link from any user before deletion so the foreign key doesn't block.
+    await db.user.updateMany({
+      where: { employeeId: id },
+      data: { employeeId: null },
+    });
+
+    await db.employee.delete({
+      where: { id, companyId },
     });
 
     await db.auditLog.create({
       data: {
         userId: (session.user as any).id,
-        action: "SOFT_DELETE",
+        action: "DELETE",
         entity: "Employee",
         entityId: id,
         before: employee as any,
-        after: updated as any,
       },
     });
 
-    return NextResponse.json({ message: "Employee terminated" });
+    return NextResponse.json({ message: "Employee deleted permanently" });
   } catch (error) {
     console.error("DELETE /api/employees/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

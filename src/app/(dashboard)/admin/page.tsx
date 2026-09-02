@@ -56,6 +56,7 @@ interface Company {
   vatRate: number;
   currency: string;
   timezone: string;
+  paymentPolicy?: string;
 }
 
 interface WorkSchedule {
@@ -483,6 +484,14 @@ export default function AdminPage() {
                     <Input
                       value={company.address || ""}
                       onChange={(e) => setCompany((prev) => prev ? { ...prev, address: e.target.value } : null)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Payment Policy</Label>
+                    <Input
+                      value={company.paymentPolicy || ""}
+                      onChange={(e) => setCompany((prev) => prev ? { ...prev, paymentPolicy: e.target.value } : null)}
+                      placeholder="e.g. Payment due in 30 days; bank transfer only"
                     />
                   </div>
                   <div className="flex justify-end">

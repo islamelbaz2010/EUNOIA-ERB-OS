@@ -19,6 +19,7 @@ const updateSettingsSchema = z.object({
   logo: z.string().optional(),
   currency: z.string().optional(),
   timezone: z.string().optional(),
+  paymentPolicy: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {

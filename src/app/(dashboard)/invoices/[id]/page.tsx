@@ -7,7 +7,6 @@ import {
   Download,
   CreditCard,
   Loader2,
-  FileText,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,10 +37,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PAYMENT_METHOD_LABELS, INVOICE_STATUS_LABELS } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { useLocale } from "@/hooks/use-locale";
 
 interface Invoice {
   id: string;
@@ -49,6 +48,7 @@ interface Invoice {
   date: string;
   dueDate: string;
   subtotal: number;
+  markupAmount: number;
   discount: number;
   vatEnabled: boolean;
   vatRate: number;
@@ -56,12 +56,14 @@ interface Invoice {
   total: number;
   status: string;
   notes?: string;
+  paymentPolicy?: string;
   client: { id: string; name: string; nameAr?: string; email?: string; phone?: string; address?: string };
   items: { id: string; description: string; quantity: number; unitPrice: number; total: number }[];
   payments: { id: string; amount: number; paymentDate: string; method: string; reference?: string }[];
 }
 
 export default function InvoiceDetailPage() {
+  const { t, locale } = useLocale();
   const params = useParams();
   const router = useRouter();
   const invoiceId = params.id as string;
@@ -108,14 +110,14 @@ export default function InvoiceDetailPage() {
         body: JSON.stringify({ ...paymentForm, invoiceId }),
       });
       if (res.ok) {
-        toast({ title: "Payment recorded successfully" });
+        toast({ title: t("invoices.paymentRecorded") });
         setShowPaymentDialog(false);
         fetchInvoice();
       } else {
-        toast({ title: "Error", variant: "destructive" });
+        toast({ title: t("common.error"), variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Error", variant: "destructive" });
+      toast({ title: t("common.error"), variant: "destructive" });
     } finally {
       setRecording(false);
     }
@@ -133,7 +135,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">Invoice not found</p>
+        <p className="text-muted-foreground">{t("common.noRecords")}</p>
       </div>
     );
   }
@@ -148,8 +150,10 @@ export default function InvoiceDetailPage() {
       PAID: "success",
       PARTIALLY_PAID: "warning",
       OVERDUE: "destructive",
+      CANCELLED: "destructive",
+      VIEWED: "default",
     };
-    return <Badge variant={map[status] || "default"}>{INVOICE_STATUS_LABELS[status] || status}</Badge>;
+    return <Badge variant={map[status] || "default"}>{t(`status.invoice.${status}`) || status}</Badge>;
   };
 
   return (
@@ -168,17 +172,14 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => window.open(`/api/invoices/${invoiceId}/pdf`, "_blank")}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download PDF
+          <Button variant="outline" onClick={() => window.open(`/api/invoices/${invoiceId}/pdf?locale=${locale}`, "_blank")}>
+            <Download className="me-2 h-4 w-4" />
+            {t("invoices.downloadPdf")}
           </Button>
           {remaining > 0 && (
             <Button onClick={() => setShowPaymentDialog(true)}>
-              <CreditCard className="mr-2 h-4 w-4" />
-              Record Payment
+              <CreditCard className="me-2 h-4 w-4" />
+              {t("invoices.recordPayment")}
             </Button>
           )}
         </div>
@@ -188,16 +189,16 @@ export default function InvoiceDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Invoice Details</CardTitle>
+              <CardTitle>{t("invoices.lineItems")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-center">Qty</TableHead>
-                    <TableHead className="text-left">Unit Price</TableHead>
-                    <TableHead className="text-left">Amount</TableHead>
+                    <TableHead>{t("invoices.description")}</TableHead>
+                    <TableHead className="text-center">{t("invoices.qty")}</TableHead>
+                    <TableHead className="text-start">{t("invoices.unitPrice")}</TableHead>
+                    <TableHead className="text-start">{t("invoices.amount")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -205,8 +206,8 @@ export default function InvoiceDetailPage() {
                     <TableRow key={item.id}>
                       <TableCell>{item.description}</TableCell>
                       <TableCell className="text-center">{item.quantity}</TableCell>
-                      <TableCell className="text-left">{formatCurrency(Number(item.unitPrice))}</TableCell>
-                      <TableCell className="text-left">{formatCurrency(Number(item.total))}</TableCell>
+                      <TableCell className="text-start">{formatCurrency(Number(item.unitPrice))}</TableCell>
+                      <TableCell className="text-start">{formatCurrency(Number(item.total))}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -217,16 +218,16 @@ export default function InvoiceDetailPage() {
           {invoice.payments.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Payment History</CardTitle>
+                <CardTitle>{t("invoices.paid")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Method</TableHead>
-                      <TableHead>Reference</TableHead>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("common.amount")}</TableHead>
+                      <TableHead>{t("common.status")}</TableHead>
+                      <TableHead>{t("common.reference")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -234,8 +235,8 @@ export default function InvoiceDetailPage() {
                       <TableRow key={payment.id}>
                         <TableCell>{formatDate(payment.paymentDate)}</TableCell>
                         <TableCell>{formatCurrency(Number(payment.amount))}</TableCell>
-                        <TableCell><Badge variant="outline">{PAYMENT_METHOD_LABELS[payment.method] || payment.method}</Badge></TableCell>
-                        <TableCell>{payment.reference || "-"}</TableCell>
+                        <TableCell><Badge variant="outline">{t(`status.paymentMethod.${payment.method}`) || payment.method}</Badge></TableCell>
+                        <TableCell>{payment.reference || "—"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -248,35 +249,43 @@ export default function InvoiceDetailPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Financial Summary</CardTitle>
+              <CardTitle>{t("invoices.financialSummary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">{t("invoices.subtotal")}</span>
                 <span>{formatCurrency(Number(invoice.subtotal))}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Discount</span>
-                <span>-{formatCurrency(Number(invoice.discount))}</span>
-              </div>
+              {Number(invoice.markupAmount) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("invoices.markup")}</span>
+                  <span>{formatCurrency(Number(invoice.markupAmount))}</span>
+                </div>
+              )}
+              {Number(invoice.discount) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">{t("invoices.discount")}</span>
+                  <span>-{formatCurrency(Number(invoice.discount))}</span>
+                </div>
+              )}
               {invoice.vatEnabled && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">VAT ({invoice.vatRate}%)</span>
+                  <span className="text-muted-foreground">{t("invoices.vat")} ({invoice.vatRate}%)</span>
                   <span>{formatCurrency(Number(invoice.vatAmount))}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-bold text-lg">
-                <span>Total</span>
+                <span>{t("invoices.total")}</span>
                 <span>{formatCurrency(Number(invoice.total))}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-success">
-                <span>Paid</span>
+                <span>{t("invoices.paid")}</span>
                 <span>{formatCurrency(paid)}</span>
               </div>
               <div className="flex justify-between text-destructive font-medium">
-                <span>Outstanding</span>
+                <span>{t("invoices.outstanding")}</span>
                 <span>{formatCurrency(remaining)}</span>
               </div>
             </CardContent>
@@ -284,7 +293,7 @@ export default function InvoiceDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Client Information</CardTitle>
+              <CardTitle>{t("invoices.client")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p className="font-medium">{invoice.client.name}</p>
@@ -296,17 +305,29 @@ export default function InvoiceDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Invoice Dates</CardTitle>
+              <CardTitle>{t("invoices.title")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Issue Date</span>
+                <span className="text-muted-foreground">{t("invoices.issueDate")}</span>
                 <span>{formatDate(invoice.date)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Due Date</span>
+                <span className="text-muted-foreground">{t("invoices.dueDate")}</span>
                 <span>{formatDate(invoice.dueDate)}</span>
               </div>
+              {invoice.paymentPolicy && (
+                <div className="pt-2">
+                  <p className="text-muted-foreground mb-1">{t("invoices.paymentPolicy")}</p>
+                  <p className="whitespace-pre-wrap">{invoice.paymentPolicy}</p>
+                </div>
+              )}
+              {invoice.notes && (
+                <div className="pt-2">
+                  <p className="text-muted-foreground mb-1">{t("invoices.notes")}</p>
+                  <p className="whitespace-pre-wrap">{invoice.notes}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -315,12 +336,12 @@ export default function InvoiceDetailPage() {
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Record Payment</DialogTitle>
-            <DialogDescription>Outstanding: {formatCurrency(remaining)}</DialogDescription>
+            <DialogTitle>{t("invoices.recordPayment")}</DialogTitle>
+            <DialogDescription>{t("invoices.outstanding")}: {formatCurrency(remaining)}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Amount</Label>
+              <Label>{t("common.amount")}</Label>
               <Input
                 type="number"
                 value={paymentForm.amount}
@@ -329,24 +350,21 @@ export default function InvoiceDetailPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Payment Method</Label>
-              <Select
-                value={paymentForm.method}
-                onValueChange={(value) => setPaymentForm((prev) => ({ ...prev, method: value }))}
-              >
+              <Label>{t("common.status")}</Label>
+              <Select value={paymentForm.method} onValueChange={(value) => setPaymentForm((prev) => ({ ...prev, method: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CASH">Cash</SelectItem>
-                  <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-                  <SelectItem value="CHECK">Check</SelectItem>
-                  <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
+                  <SelectItem value="CASH">{t("status.paymentMethod.CASH")}</SelectItem>
+                  <SelectItem value="BANK_TRANSFER">{t("status.paymentMethod.BANK_TRANSFER")}</SelectItem>
+                  <SelectItem value="CHECK">{t("status.paymentMethod.CHECK")}</SelectItem>
+                  <SelectItem value="CREDIT_CARD">{t("status.paymentMethod.CREDIT_CARD")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Reference</Label>
+              <Label>{t("common.reference")}</Label>
               <Input
                 value={paymentForm.reference}
                 onChange={(e) => setPaymentForm((prev) => ({ ...prev, reference: e.target.value }))}
@@ -356,11 +374,11 @@ export default function InvoiceDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleRecordPayment} disabled={recording}>
-              {recording ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Record Payment
+              {recording ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : null}
+              {t("invoices.recordPayment")}
             </Button>
           </DialogFooter>
         </DialogContent>

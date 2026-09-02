@@ -7,12 +7,17 @@ export function calculateInvoiceTotals(
   }>,
   options: {
     discount?: number;
+    markupIsPercentage?: boolean;
+    markupValue?: number;
     vatEnabled?: boolean;
     vatRate?: number;
   }
 ): {
   subtotal: number;
   discount: number;
+  markupIsPercentage: boolean;
+  markupValue: number;
+  markupAmount: number;
   taxableAmount: number;
   vatEnabled: boolean;
   vatRate: number;
@@ -20,6 +25,8 @@ export function calculateInvoiceTotals(
   total: number;
 } {
   const discount = options.discount ?? 0;
+  const markupIsPercentage = options.markupIsPercentage ?? false;
+  const markupValue = options.markupValue ?? 0;
   const vatEnabled = options.vatEnabled ?? false;
   const vatRate = options.vatRate ?? 0;
 
@@ -28,18 +35,26 @@ export function calculateInvoiceTotals(
     return sum + item.quantity * item.unitPrice;
   }, 0);
 
-  // Apply discount
-  const taxableAmount = Math.max(0, subtotal - discount);
+  // Marketing agency markup is additive, applied after subtotal
+  let markupAmount = markupIsPercentage
+    ? (subtotal * markupValue) / 100
+    : markupValue;
+  markupAmount = Math.max(0, markupAmount);
 
-  // Calculate VAT on (subtotal - discount) if enabled
+  const taxableAmount = Math.max(0, subtotal + markupAmount - discount);
+
+  // Calculate VAT on taxable amount
   const vatAmount = vatEnabled ? (taxableAmount * vatRate) / 100 : 0;
 
-  // Total = subtotal - discount + vatAmount
+  // Total = subtotal + markup - discount + vatAmount
   const total = taxableAmount + vatAmount;
 
   return {
     subtotal: Math.round(subtotal * 100) / 100,
     discount: Math.round(discount * 100) / 100,
+    markupIsPercentage,
+    markupValue: Math.round(markupValue * 100) / 100,
+    markupAmount: Math.round(markupAmount * 100) / 100,
     taxableAmount: Math.round(taxableAmount * 100) / 100,
     vatEnabled,
     vatRate,

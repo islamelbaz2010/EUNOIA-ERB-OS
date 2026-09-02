@@ -17,6 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
+import { useLocale } from "@/hooks/use-locale";
+import { tReplace } from "@/lib/i18n";
 
 interface DashboardStats {
   totalEmployees: number;
@@ -31,11 +33,13 @@ interface DashboardStats {
 interface Activity {
   id: string;
   type: string;
-  message: string;
+  amount: number;
+  invoiceNumber: string;
   timestamp: string;
 }
 
 export default function DashboardPage() {
+  const { t, locale } = useLocale();
   const [stats, setStats] = React.useState<DashboardStats | null>(null);
   const [activities, setActivities] = React.useState<Activity[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -61,7 +65,8 @@ export default function DashboardPage() {
         setActivities(data.recentPayments?.map((p: any) => ({
           id: p.id,
           type: "payment",
-          message: `Payment of ${formatCurrency(Number(p.amount))} recorded for invoice ${p.invoice?.invoiceNumber ?? ""}`,
+          amount: Number(p.amount),
+          invoiceNumber: p.invoice?.invoiceNumber ?? "",
           timestamp: p.createdAt,
         })) || []);
       }
@@ -74,7 +79,7 @@ export default function DashboardPage() {
 
   const statCards = [
     {
-      title: "Total Employees",
+      title: t("dashboard.totalEmployees"),
       value: stats?.totalEmployees ?? 0,
       icon: Users,
       color: "text-primary",
@@ -82,7 +87,7 @@ export default function DashboardPage() {
       href: "/employees",
     },
     {
-      title: "Today's Attendance",
+      title: t("dashboard.todayAttendance"),
       value: stats?.todayAttendance ?? 0,
       icon: Clock,
       color: "text-success",
@@ -90,7 +95,7 @@ export default function DashboardPage() {
       href: "/attendance",
     },
     {
-      title: "Late Today",
+      title: t("dashboard.lateToday"),
       value: stats?.lateToday ?? 0,
       icon: AlertTriangle,
       color: "text-warning",
@@ -98,7 +103,7 @@ export default function DashboardPage() {
       href: "/attendance?status=LATE",
     },
     {
-      title: "Absent Today",
+      title: t("dashboard.absentToday"),
       value: stats?.absentToday ?? 0,
       icon: UserX,
       color: "text-destructive",
@@ -106,7 +111,7 @@ export default function DashboardPage() {
       href: "/attendance?status=ABSENT",
     },
     {
-      title: "Pending Exceptions",
+      title: t("dashboard.pendingExceptions"),
       value: stats?.pendingExceptions ?? 0,
       icon: FileWarning,
       color: "text-warning",
@@ -114,7 +119,7 @@ export default function DashboardPage() {
       href: "/attendance?tab=exceptions&status=PENDING",
     },
     {
-      title: "Outstanding Invoices",
+      title: t("dashboard.outstandingInvoices"),
       value: stats?.outstandingInvoices ?? 0,
       icon: Receipt,
       color: "text-primary",
@@ -122,7 +127,7 @@ export default function DashboardPage() {
       href: "/invoices?status=OUTSTANDING",
     },
     {
-      title: "Overdue Invoices",
+      title: t("dashboard.overdueInvoices"),
       value: stats?.overdueInvoices ?? 0,
       icon: Clock3,
       color: "text-destructive",
@@ -134,8 +139,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to the EUNOIA ERB OS</p>
+        <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
+        <p className="text-muted-foreground">{t("dashboard.welcome")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -162,7 +167,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-muted-foreground">{card.title}</p>
-                        <p className="text-2xl font-bold">{formatNumber(card.value)}</p>
+                        <p className="text-2xl font-bold">{formatNumber(card.value, locale)}</p>
                       </div>
                       <div className={`rounded-lg p-2 ${card.bgColor}`}>
                         <Icon className={`h-5 w-5 ${card.color}`} />
@@ -179,7 +184,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Recent Activity
+            {t("dashboard.recentActivity")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -198,7 +203,7 @@ export default function DashboardPage() {
           ) : activities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Activity className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">No recent activity</p>
+              <p className="text-muted-foreground">{t("dashboard.noRecentActivity")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -211,13 +216,18 @@ export default function DashboardPage() {
                     <Activity className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm">{activity.message}</p>
+                    <p className="text-sm">
+                      {tReplace("dashboard.paymentMessage", {
+                        amount: formatCurrency(activity.amount, "EGP", locale),
+                        invoiceNumber: activity.invoiceNumber,
+                      })}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(activity.timestamp)}
+                      {formatDate(activity.timestamp, locale)}
                     </p>
                   </div>
                   <Badge variant="secondary" className="shrink-0">
-                    Payment
+                    {t("dashboard.payment")}
                   </Badge>
                 </div>
               ))}

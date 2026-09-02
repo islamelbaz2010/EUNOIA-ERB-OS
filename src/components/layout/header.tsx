@@ -13,7 +13,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bell, Menu, User, LogOut } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
+import { LocaleSwitcher } from "@/components/locale-switcher";
+import { NotificationBell } from "@/components/notification-bell";
+import { useLocale } from "@/hooks/use-locale";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -24,6 +27,7 @@ interface HeaderProps {
 export function Header({ onMenuClick, title, className }: HeaderProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { t } = useLocale();
   const user = session?.user as any;
 
   return (
@@ -39,6 +43,7 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
           size="icon"
           className="lg:hidden"
           onClick={onMenuClick}
+          aria-label={t("common.menu")}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -48,10 +53,8 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />
-        </Button>
+        <LocaleSwitcher />
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -72,13 +75,16 @@ export function Header({ onMenuClick, title, className }: HeaderProps) {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/profile")}>
-              <User className="mr-2 h-4 w-4" />
-              Profile
+              <User className="me-2 h-4 w-4" />
+              {t("common.profile")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={() => signOut({ callbackUrl: "/login" })}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut className="me-2 h-4 w-4" />
+              {t("common.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

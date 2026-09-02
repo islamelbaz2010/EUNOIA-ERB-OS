@@ -167,10 +167,11 @@ model Company {
   country   String?
   taxNumber String?
   vatNumber String?
-  vatRate   Decimal? @default(15) @db.Decimal(5, 2)
-  logo      String?
-  currency  String   @default("EGP")
-  timezone  String   @default("Africa/Cairo")
+  vatRate       Decimal? @default(15) @db.Decimal(5, 2)
+  logo          String?
+  currency      String   @default("EGP")
+  timezone      String   @default("Africa/Cairo")
+  paymentPolicy String?
 
   branches          Branch[]
   departments       Department[]
@@ -733,10 +734,14 @@ model Invoice {
   vatAmount     Decimal       @default(0) @db.Decimal(12, 2)
   total         Decimal       @db.Decimal(12, 2)
   currency      String        @default("EGP")
-  status        InvoiceStatus @default(DRAFT)
-  notes         String?
-  paymentTerms  Int           @default(30)
-  createdById   String
+  status            InvoiceStatus @default(DRAFT)
+  notes             String?
+  paymentTerms      Int           @default(30)
+  paymentPolicy     String?
+  markupIsPercentage Boolean      @default(false)
+  markupValue       Decimal       @default(0) @db.Decimal(12, 2)
+  markupAmount      Decimal       @default(0) @db.Decimal(12, 2)
+  createdById       String
 
   items           InvoiceItem[]
   paymentSchedule PaymentSchedule?

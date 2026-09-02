@@ -10,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import { useLocale } from "@/hooks/use-locale";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const [email, setEmail] = React.useState("");
@@ -35,10 +37,10 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Incorrect email or password");
+        setError(t("auth.incorrect"));
         toast({
-          title: "Sign-in failed",
-          description: "Incorrect email or password",
+          title: t("auth.error"),
+          description: t("auth.incorrect"),
           variant: "destructive",
         });
       } else {
@@ -46,7 +48,7 @@ function LoginForm() {
         router.refresh();
       }
     } catch (err) {
-      setError("An error occurred while signing in");
+      setError(t("auth.error"));
     } finally {
       setIsLoading(false);
     }
@@ -60,10 +62,8 @@ function LoginForm() {
             E
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold">EUNOIA ERB OS</CardTitle>
-        <CardDescription>
-          Business Operating System
-        </CardDescription>
+        <CardTitle className="text-2xl font-bold">{t("app.name")}</CardTitle>
+        <CardDescription>{t("app.tagline")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +74,7 @@ function LoginForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("auth.email")}</Label>
             <Input
               id="email"
               type="email"
@@ -88,7 +88,7 @@ function LoginForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("auth.password")}</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -104,7 +104,7 @@ function LoginForm() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                className="absolute end-0 top-0 h-full px-3 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -119,11 +119,11 @@ function LoginForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                {t("auth.signingIn")}
               </>
             ) : (
-              "Sign In"
+              t("auth.signIn")
             )}
           </Button>
         </form>

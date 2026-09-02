@@ -4,15 +4,19 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { formatZodError } from "@/lib/validation";
 import { requireRole } from "@/lib/authorization";
+import { calculateInvoiceTotals } from "@/lib/invoice-engine";
 
 const updateInvoiceSchema = z.object({
   clientId: z.string().uuid().optional(),
   dueDate: z.string().datetime().optional(),
   discount: z.number().min(0).optional(),
+  markupIsPercentage: z.boolean().optional(),
+  markupValue: z.number().min(0).optional(),
   vatEnabled: z.boolean().optional(),
   notes: z.string().optional(),
   status: z.enum(["DRAFT", "SENT", "VIEWED", "PARTIALLY_PAID", "PAID", "OVERDUE", "CANCELLED"]).optional(),
   paymentTerms: z.number().int().min(0).optional(),
+  paymentPolicy: z.string().optional(),
   items: z
     .array(
       z.object({
@@ -102,28 +106,31 @@ export async function PUT(
     if (validatedData.clientId) updateData.clientId = validatedData.clientId;
     if (validatedData.dueDate) updateData.dueDate = new Date(validatedData.dueDate);
     if (validatedData.discount !== undefined) updateData.discount = validatedData.discount;
+    if (validatedData.markupIsPercentage !== undefined) updateData.markupIsPercentage = validatedData.markupIsPercentage;
+    if (validatedData.markupValue !== undefined) updateData.markupValue = validatedData.markupValue;
     if (validatedData.vatEnabled !== undefined) updateData.vatEnabled = validatedData.vatEnabled;
     if (validatedData.notes !== undefined) updateData.notes = validatedData.notes;
     if (validatedData.paymentTerms !== undefined) updateData.paymentTerms = validatedData.paymentTerms;
+    if (validatedData.paymentPolicy !== undefined) updateData.paymentPolicy = validatedData.paymentPolicy;
 
     if (validatedData.items) {
       await db.invoiceItem.deleteMany({ where: { invoiceId: id } });
 
-      let subtotal = 0;
-      for (const item of validatedData.items) {
-        subtotal += item.quantity * item.unitPrice;
-      }
-
-      const discount = validatedData.discount ?? Number(existing.discount);
-      const afterDiscount = subtotal - discount;
       const vatEnabled = validatedData.vatEnabled ?? existing.vatEnabled;
       const vatRate = vatEnabled ? Number(existing.vatRate) : 0;
-      const vatAmount = afterDiscount * (vatRate / 100);
-      const total = afterDiscount + vatAmount;
+      const totals = calculateInvoiceTotals(validatedData.items, {
+        discount: validatedData.discount ?? Number(existing.discount),
+        markupIsPercentage: validatedData.markupIsPercentage ?? existing.markupIsPercentage,
+        markupValue: validatedData.markupValue ?? Number(existing.markupValue),
+        vatEnabled,
+        vatRate,
+      });
 
-      updateData.subtotal = subtotal;
-      updateData.vatAmount = vatAmount;
-      updateData.total = total;
+      updateData.subtotal = totals.subtotal;
+      updateData.markupValue = totals.markupValue;
+      updateData.markupAmount = totals.markupAmount;
+      updateData.vatAmount = totals.vatAmount;
+      updateData.total = totals.total;
 
       await db.invoiceItem.createMany({
         data: validatedData.items.map((item) => ({

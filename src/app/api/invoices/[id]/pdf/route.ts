@@ -19,6 +19,7 @@ export async function GET(
     }
 
     const { id } = await params;
+    const locale = request.nextUrl.searchParams.get("locale") === "ar" ? "ar" : "en";
 
     const invoice = await db.invoice.findFirst({
       where: { id, companyId },
@@ -54,6 +55,7 @@ export async function GET(
     }));
 
     const pdfBuffer = await generateInvoicePdf({
+      locale,
       company: {
         name: company?.name || "EUNOIA",
         nameAr: company?.nameAr || undefined,
@@ -69,6 +71,7 @@ export async function GET(
         status: invoice.status,
         notes: invoice.notes || undefined,
         paymentTerms: invoice.paymentTerms,
+        paymentPolicy: invoice.paymentPolicy || undefined,
       },
       client: {
         name: invoice.client.name,
@@ -80,6 +83,9 @@ export async function GET(
       items,
       subtotal: Number(invoice.subtotal),
       discount: Number(invoice.discount),
+      markupIsPercentage: invoice.markupIsPercentage,
+      markupValue: Number(invoice.markupValue),
+      markupAmount: Number(invoice.markupAmount),
       vatEnabled: invoice.vatEnabled,
       vatRate: Number(invoice.vatRate),
       vatAmount: Number(invoice.vatAmount),
